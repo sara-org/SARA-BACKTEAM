@@ -11,12 +11,8 @@ class RoleSeeder extends Seeder
 {
     public function run()
     {
-        $userRole = Role::create(['name' => 'user']);
-        $adminRole = Role::create(['name' => 'admin']);
-        $doctorRole = Role::create(['name' => 'doctor']);
-        $employeeRole = Role::create(['name' => 'employee']);
 
-        $adminUser = User::create([
+        User::create([
             'name' => 'Sara',
             'email' => 'sara@gmail.com',
             'password' => bcrypt('password'),
@@ -24,10 +20,10 @@ class RoleSeeder extends Seeder
             'address' =>'Damascus',
             'photo' => 'admin.jpg',
             'gender'=> 'female',
-            'role_id'=> $adminRole->role_id
+            'role'=> '2'
         ]);
 
-        $doctorUser1 = User::create([
+        User::create([
             'name' => 'Ahmad',
             'email' => 'Ahmad@gmail.com',
             'password' => bcrypt('password'),
@@ -35,10 +31,10 @@ class RoleSeeder extends Seeder
             'address' => 'Damascus',
             'photo' => 'doctor1.jpg',
             'gender'=> 'male',
-            'role_id'=> $doctorRole->role_id
+            'role'=> '3'
         ]);
 
-        $doctorUser2 = User::create([
+        User::create([
             'name' => 'Omar',
             'email' => 'omar@gmail.com',
             'password' => bcrypt('password'),
@@ -46,7 +42,7 @@ class RoleSeeder extends Seeder
             'address' => 'Damascus',
             'photo' => 'doctor2.jpg',
             'gender'=> 'male',
-            'role_id'=> $doctorRole->role_id
+            'role'=> '3',
         ]);
 
     }

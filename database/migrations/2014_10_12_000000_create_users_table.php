@@ -21,7 +21,7 @@ return new class extends Migration
             $table->longText('address');
             $table->enum('gender', ['male', 'female']);
             $table->longText('photo')->nullable();
-            $table->foreignId('role_id')->default(1)->constrained('roles')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->enum('role', ['1', '2', '3', '4']);
             $table->rememberToken();
             $table->timestamps();
         });

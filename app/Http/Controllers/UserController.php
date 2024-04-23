@@ -35,7 +35,8 @@ class UserController extends Controller
             'address' => ['required', 'string'],
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails()) 
+        {
             return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -235,23 +236,45 @@ class UserController extends Controller
         return response()->json($data, Response::HTTP_OK);
     }
 
-   
-public function changeRole(Request $request, $id)
+    public function changeRole(Request $request, $user_id)
 {
+    
     try {
-        $user = User::findOrFail($id);
-        $userId=User::findOrFail(1);
-        // request if admin changes 
-        if (Auth::user() && 'role_id' == 2) {
-            return response()->json(['message' => 'unauthorized'], Response::HTTP_FORBIDDEN);
+        if (!auth()->check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+        if (Auth::user()->role !== '2') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only the admin can change roles',
+            ], 403);
         }
 
-        // update role 
-        $user->update(['role_id' => 4]);
+        $user = User::find($user_id);
 
-        return response()->json(['message' => 'updated successfully'], Response::HTTP_OK);
-    } catch (ModelNotFoundException $exception) {
-        return response()->json([$exception->getMessage()], Response::HTTP_NOT_FOUND);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        $user->role = $request->new_role;
+        $user->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'User Role Updated Successfully',
+            'data' => $user
+        ], 200);
+    } catch (\Throwable $th) {
+        return response()->json([
+            'status' => false,
+            'message' => $th->getMessage()
+        ], 500);
     }
 }
+
 }
