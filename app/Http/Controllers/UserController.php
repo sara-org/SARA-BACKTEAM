@@ -31,7 +31,7 @@ class UserController extends Controller
             'c_password' => ['required', 'same:password'],
             'phone' => ['required', 'string'],
             'gender' => ['required', 'string'],
-            'photo' => ['string'],
+            'photo' => ['nullable' , 'string'],
             'address' => ['required', 'string'],
         ]);
 
