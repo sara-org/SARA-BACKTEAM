@@ -2,26 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Helper\ResponseHelper;
+use App\Models\Department;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Helper\ResponseHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Animal;
-use App\Services\AnimalService;
-
-class AnimalController extends Controller
+class DepartmentController extends Controller
 {
-    public function addAnimal(Request $request)
+    public function addDepartment(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'age' => 'required',
-            'photo' => 'required',
-            'entry_date' => 'required',
-            'animaltype_id' => 'required|exists:animaltypes,id',
-            'department_id' => 'required|exists:departments,id'
+        $validator = Validator::make($request->all(),
+         [
+            'name' => 'required' , 'string',
+            'number' => 'required', 'min:1',
+
         ]);
 
         if ($validator->fails())
@@ -47,31 +41,22 @@ class AnimalController extends Controller
             ], 401);
         }
     
-        $animal = Animal::create([
+        $department = Department::create([
             'name' => $request->name,
-            'age' => $request->age,
-            'photo' => $request->photo,
-            'entry_date' => $request->entry_date, 
-            'animaltype_id' => $request->animaltype_id,
-            'department_id' => $request->department_id,
-
+            'number' => $request->number,
         ]);   
         return response()->json([
             'status' => true,
-            'message' => 'Animal created successfully',
-            'data' => $animal,
+            'message' => 'Deparment created successfully',
+            'data' => $department,
         ], 201);
     }
 
-    public function updateAnimal(Request $request, $id)
+    public function updateDepartment(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'age' => 'required',
-            'photo' => 'required',
-            'entry_date' => 'required',
-            'animaltype_id' => 'required|exists:animaltypes,id',
-            'department_id' => 'required|exists:departments,id'
+            'number' => 'required',
         ]);
     
         if ($validator->fails()) 
@@ -86,52 +71,50 @@ class AnimalController extends Controller
         $user = Auth::user();
     
         if ($user->role !== '4' && $user->role !== '2') {
-        return response()->json([
+
+            return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized access',
             ], 401);
         }
     
-        $animal = Animal::find($id);
+        $department = Department::find($id);
     
-        if (!$animal) {
+        if (!$department) {
             return response()->json([
                 'status' => false,
-                'message' => 'Animal not found',
+                'message' => 'Department not found',
             ], 404);
         }
     
-        $animal->name = $request->name;
-        $animal->age = $request->age;
-        $animal->photo = $request->photo;
-        $animal->entry_date = $request->entry_date;
-        $animal->animaltype_id = $request->animaltype_id;
-        $animal->department_id = $request->department_id;
-        $animal->save();
+        $department->name = $request->name;
+        $department->number = $request->number;
+       
+        $department->save();
     
         return response()->json([
             'status' => true,
-            'message' => 'Animal updated successfully',
-            'data' => $animal,
+            'message' => 'Department updated successfully',
+            'data' => $department,
         ], 200);
     }
    
-    public function getAllAnimals()
+    public function getAllDepartments()
     {
         try {
             if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Only the admin and employees can get all animals',
+                    'message' => 'Only the admin and employees can get all departments',
                 ], 403);
             }
     
-            $animals = Animal::all();
+            $departments = Department::all();
     
             return response()->json([
                 'status' => true,
-                'message' => 'Animals Retrieved Successfully',
-                'data' => $animals
+                'message' => 'Departments Retrieved Successfully',
+                'data' => $departments
             ], 200);
         }
          catch (\Throwable $th) {
@@ -142,9 +125,24 @@ class AnimalController extends Controller
         }
     }
 
-    public function deleteAnimal($id)
+    public function deleteDepartment($id)
     {
-       $animal=app(AnimalService::class)->deleteAnimal($id);
-       return  $animal;
+        {
+            $user = Auth::user();
+        
+            if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
+                return ResponseHelper::success([],null,'Unauthorized',401);
+    
+            }
+        
+            $department=Department::find($id);
+    
+            if (!$department) {
+                return ResponseHelper::success([],null,'Department not found',200);
+            }
+                    $department->delete();
+        return ResponseHelper::success([],null,'Department deleted successfully',200);
+         
+        }
     }
 }
