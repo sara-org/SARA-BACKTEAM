@@ -18,8 +18,8 @@ class AnimalController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'age' => 'required',
-            'photo' => 'required',
-            'entry_date' => 'required',
+            'photo' => ['nullable','string'],
+            'entry_date' => ['required' , 'date'],
             'animaltype_id' => 'required|exists:animaltypes,id',
             'department_id' => 'required|exists:departments,id'
         ]);

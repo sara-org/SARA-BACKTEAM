@@ -12,7 +12,7 @@ class CreateAnimalsTable extends Migration
             $table->id();
             $table->string('name');
             $table->integer('age');
-            $table->string('photo');
+            $table->string('photo')->nullable();
             $table->date('entry_date');
             $table->timestamps();
             $table->unsignedBigInteger('department_id');
