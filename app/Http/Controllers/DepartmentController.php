@@ -70,8 +70,8 @@ class DepartmentController extends Controller
     
         $user = Auth::user();
     
-        if ($user->role !== '4' && $user->role !== '2') {
-
+        if ($user->role !== '4' && $user->role !== '2')
+        {
             return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized access',
@@ -123,8 +123,8 @@ class DepartmentController extends Controller
                 'message' => $th->getMessage()
             ], 500);
         }
+    
     }
-
     public function deleteDepartment($id)
     {
         {

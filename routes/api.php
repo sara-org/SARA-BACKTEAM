@@ -15,7 +15,7 @@ use App\Http\Controllers\DepartmentController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request)
-     {
+    {
         return $request->user();
     });
 
@@ -37,7 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/department/update/{department_id}',[DepartmentController::class,'updateDepartment']);
    Route::get('/department/getall',[DepartmentController::class,'getAllDepartments']);
    Route::delete('/department/delete/{department_id}',[DepartmentController::class,'deleteDepartment']);
-
 });
     
 Route::post('/user/signup', [UserController::class, 'signUp']);
