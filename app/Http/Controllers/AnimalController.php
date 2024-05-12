@@ -47,10 +47,10 @@ class AnimalController extends Controller
             ], 401);
         }
         $existingAnimal = Animal::where('name', $request->name)
-        ->orWhere('age', $request->age)
+        ->Where('age', $request->age)
         ->orWhere('photo',$request->photo)
-        ->orWhere('entry_date', $request->entry_date)
-        ->orWhere('animaltype_id', $request->animaltype_id)
+        ->Where('entry_date', $request->entry_date)
+        ->Where('animaltype_id', $request->animaltype_id)
         ->first();
 
     if ($existingAnimal) {
