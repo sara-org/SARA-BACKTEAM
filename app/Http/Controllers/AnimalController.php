@@ -47,9 +47,10 @@ class AnimalController extends Controller
             ], 401);
         }
         $existingAnimal = Animal::where('name', $request->name)
-        ->where('age', $request->age)
-        ->where('photo',$request->photo)
-        ->where('entry_date', $request->entry_date)
+        ->orWhere('age', $request->age)
+        ->orWhere('photo',$request->photo)
+        ->orWhere('entry_date', $request->entry_date)
+        ->orWhere('animaltype_id', $request->animaltype_id)
         ->first();
 
     if ($existingAnimal) {
@@ -129,29 +130,12 @@ class AnimalController extends Controller
    
     public function getAllAnimals()
     {
-        // try {
-        //     if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
-        //         return response()->json([
-        //             'status' => false,
-        //             'message' => 'Only the admin and employees can get all animals',
-        //         ], 403);
-        //     }
+        
     
             $animals = Animal::all()->toArray();
     
             return ResponseHelper::success($animals,null,'Animals Retrieved Successfully',200);
-            // return response()->json([
-            //     'status' => true,
-            //     'message' => 'Animals Retrieved Successfully',
-            //     'data' => $animals
-            // ], 200);
-        }
-        //  catch (\Throwable $th) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => $th->getMessage()
-        //     ], 500);
-        // }
+    }
     
     public function deleteAnimal($id)
     {
