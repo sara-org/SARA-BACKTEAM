@@ -46,7 +46,18 @@ class AnimalController extends Controller
                 'message' => 'Unauthorized access',
             ], 401);
         }
-    
+        $existingAnimal = Animal::where('name', $request->name)
+        ->where('age', $request->age)
+        ->where('photo',$request->photo)
+        ->where('entry_date', $request->entry_date)
+        ->first();
+
+    if ($existingAnimal) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Duplicate animal entry',
+        ], 409);
+    }
         $animal = Animal::create([
             'name' => $request->name,
             'age' => $request->age,
@@ -126,13 +137,14 @@ class AnimalController extends Controller
         //         ], 403);
         //     }
     
-            $animals = Animal::all();
+            $animals = Animal::all()->toArray();
     
-            return response()->json([
-                'status' => true,
-                'message' => 'Animals Retrieved Successfully',
-                'data' => $animals
-            ], 200);
+            return ResponseHelper::success($animals,null,'Animals Retrieved Successfully',200);
+            // return response()->json([
+            //     'status' => true,
+            //     'message' => 'Animals Retrieved Successfully',
+            //     'data' => $animals
+            // ], 200);
         }
         //  catch (\Throwable $th) {
         //     return response()->json([

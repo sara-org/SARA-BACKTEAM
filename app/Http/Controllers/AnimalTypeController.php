@@ -85,14 +85,7 @@ class AnimalTypeController extends Controller
    
     public function getAllAnimalsTypes()
     {
-        // try {
-        //     if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
-        //         return response()->json([
-        //             'status' => false,
-        //             'message' => 'Only the admin and employees can get all animals types',
-        //         ], 403);
-        //     }
-    
+        
             $animalstypes = AnimalType::all();
     
             return response()->json([
@@ -101,13 +94,26 @@ class AnimalTypeController extends Controller
                 'data' => $animalstypes
             ], 200);
         }
-        //  catch (\Throwable $th) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => $th->getMessage()
-        //     ], 500);
-        // }
-    
+        public function getAnimalsByType($id)
+        {
+            $animaltype = AnimalType::find($id);
+        
+            if (!$animaltype) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Animal Type not found',
+                ], 404);
+            }
+        
+            $animals = $animaltype->animals;
+        
+            return response()->json([
+                'status' => true,
+                'message' => 'Animals Retrieved Successfully',
+                'data' => $animals
+            ], 200);
+        }
+          
 
     public function deleteAnimalType($id)
     {

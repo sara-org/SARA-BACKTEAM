@@ -12,14 +12,14 @@ class CreateAnimalsTable extends Migration
             $table->id();
             $table->string('name');
             $table->integer('age');
-            $table->string('photo')->nullable();
+            $table->longText('photo')->nullable();
             $table->date('entry_date');
             $table->timestamps();
             $table->unsignedBigInteger('department_id');
             $table->unsignedBigInteger('animaltype_id');
             $table->foreign('department_id')->references('id')->on('departments');
             $table->foreign('animaltype_id')->references('id')->on('animaltypes');
-           
+
         });
     }
 

@@ -13,6 +13,6 @@ class AnimalType extends Model
 
     public function animals()
     {
-        return $this->hasMany(Animal::class);
+        return $this->hasMany(Animal::class, 'animaltype_id');
     }
 }
