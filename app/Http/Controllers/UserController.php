@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Sanctum;
 use Illuminate\Support\Facades\Password;
+use App\Helper\ResponseHelper;
 use App\Models\User;
-use App\Models\Role;
+use App\Models\Donation;
+use App\Models\Adoption;
+use App\Models\Sponcership;
 use App\Http\Traits\Images;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Mail\SendCodeResetPassword;
 use App\Mail\VerifyAccount;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -20,6 +25,7 @@ use App\Models\ResetCodePassword;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 class UserController extends Controller
 {
     public function signUp(Request $request)
@@ -277,4 +283,305 @@ class UserController extends Controller
     }
 }
 
+
+
+public function addDonation(Request $request, $user_id)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'balance' => 'required|numeric',
+            'donation_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        if (!auth()->check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $userData = $request->all();
+        $user = User::findOrFail($user_id);
+
+        $donationData = [
+            'balance' => $userData['balance'],
+            'donation_date' => $userData['donation_date'],
+            'user_id' => $user_id
+        ];
+
+        $donation = Donation::create($donationData);
+
+        return ResponseHelper::created($donation, 'Donation added successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateDonation(Request $request, $donation_id)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'balance' => 'required|numeric',
+            'donation_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $donation = Donation::findOrFail($donation_id);
+        $userData = $request->all();
+        if ($donation->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $donationData = [
+            'balance' => $userData['balance'],
+            'donation_date' => $userData['donation_date'],
+        ];
+
+        $donation->update($donationData);
+
+        return ResponseHelper::updated($donation, 'Donation updated successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Donation not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getUserDonations($user_id)
+{
+    try {
+        $user = User::findOrFail($user_id);
+        $donations = $user->donations;
+
+        return ResponseHelper::success($donations, 'User donations retrieved successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function deleteDonation($donation_id)
+{
+    try {
+        $donation = Donation::findOrFail($donation_id);
+        
+       
+        if ($donation->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        
+        $donation->delete();
+
+        return ResponseHelper::success([], 'Donation deleted successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Donation not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function addSponcership(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'animal_id' => 'required|exists:animals,id',
+            'balance' => 'required|numeric',
+            'sponcership_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        if (!auth()->check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $sponcershipData = [
+            'balance' => $request->input('balance'),
+            'sponcership_date' => $request->input('sponcership_date'),
+            'user_id' => $request->input('user_id'),
+            'animal_id' => $request->input('animal_id')
+        ];
+
+        $sponcership = Sponcership::create($sponcershipData);
+
+        return ResponseHelper::created($sponcership, 'Sponcership added successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User or animal not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateSponcership(Request $request, $sponcership_id)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'balance' => 'required|numeric',
+            'sponcership_date' => 'required|date',
+            // 'user_id' => 'required|exists:users,id',
+            'animal_id' => 'required|exists:animals,id',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $sponcership = Sponcership::findOrFail($sponcership_id);
+        $userData = $request->all();
+        if ($sponcership->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $sponcershipData = [
+            'balance' => $userData['balance'],
+            'sponcership_date' => $userData['sponcership_date'],
+            // 'user_id' => $request->input('user_id'),
+            'animal_id' => $request->input('animal_id')
+        ];
+
+        $sponcership->update($sponcershipData);
+
+        return ResponseHelper::updated($sponcership, 'Sponcership updated successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Sponcership not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+
+public function getUserSponcerships($user_id)
+{
+    try {
+        $user = User::findOrFail($user_id);
+        $sponcerships = $user->sponcerships;
+
+        return ResponseHelper::success($sponcerships, 'User sponcerships retrieved successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function deleteSponcership($sponcership_id)
+{
+    try {
+        $sponcership = Sponcership::findOrFail($sponcership_id);
+        
+       
+        if ($sponcership->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        
+        $sponcership->delete();
+
+        return ResponseHelper::success([], 'Sponcership deleted successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Sponcership not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function addAdoption(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'animal_id' => 'required|exists:animals,id',
+            'adop_status' => 'boolean',
+            'adoption_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        if (!auth()->check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $adoptionData = [
+           
+            'adoption_date' => $request->input('adoption_date'),
+            'user_id' => $request->input('user_id'),
+            'animal_id' => $request->input('animal_id')
+        ];
+
+        $adoption = Adoption::create($adoptionData);
+
+        return ResponseHelper::created($adoption, 'Adoption added successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User or animal not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateAdoption(Request $request, $adoption_id)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+           
+            'animal_id' => 'required|exists:animals,id',
+            'adop_status' => 'boolean',
+            'adoption_date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $adoption = Adoption::findOrFail($adoption_id);
+        $userData = $request->all();
+        if ($adoption->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $adoptionData = [
+            'adop_status' => $request->input('adop_status'),
+            'adoption_date' => $request->input('adoption_date'),          
+            'animal_id' => $request->input('animal_id')
+        ];
+
+        $adoption->update($adoptionData);
+
+        return ResponseHelper::updated($adoption, 'Adoption updated successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Adoption not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getUserAdoptions($user_id)
+{
+    try {
+        $user = User::findOrFail($user_id);
+        $adoptions = $user->adoptions;
+
+        return ResponseHelper::success($adoptions, 'User adoptions retrieved successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function deleteAdoption($adoption_id)
+{
+    try {
+        $adoption = Adoption::findOrFail($adoption_id);
+        
+       
+        if ($adoption->user_id !== auth()->user()->id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        
+        $adoption->delete();
+
+        return ResponseHelper::success([], 'Adoption deleted successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'Adoption not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
 }

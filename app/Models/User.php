@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Models;
-use App\Models\Role;
+use App\Models\Donation;
+use App\Models\Adoption;
+use App\Models\Sponcership;
 use App\Models\ResetCodePassword;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,4 +56,16 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public function donations()
+{
+    return $this->hasMany(Donation::class);
+}
+public function sponcerships()
+{
+    return $this->hasMany(Sponcership::class);
+}
+public function adoptions()
+{
+    return $this->hasMany(Adoption::class);
+}
 }
