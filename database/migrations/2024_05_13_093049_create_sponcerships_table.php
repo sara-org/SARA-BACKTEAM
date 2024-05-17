@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('sponcerships', function (Blueprint $table) {
             $table->id();
             $table->integer('balance'); 
+            $table->boolean('spon_status')->default(0);
             $table->date('sponcership_date');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('animal_id');

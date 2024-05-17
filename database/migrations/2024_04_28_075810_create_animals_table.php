@@ -14,6 +14,7 @@ class CreateAnimalsTable extends Migration
             $table->integer('age');
             $table->longText('photo')->nullable();
             $table->date('entry_date');
+            $table->enum('health', ['healthy', 'unhealthy', 'under treatment']);
             $table->timestamps();
             $table->unsignedBigInteger('department_id');
             $table->unsignedBigInteger('animaltype_id');

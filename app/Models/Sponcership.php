@@ -11,6 +11,7 @@ class Sponcership extends Model
     
     protected $fillable = [
         'balance',
+        'spon_status',
         'sponcership_date',
         'user_id',
         'animal_id',

@@ -101,14 +101,6 @@ class DepartmentController extends Controller
    
     public function getAllDepartments()
     {
-        // try {
-        //     if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
-        //         return response()->json([
-        //             'status' => false,
-        //             'message' => 'Only the admin and employees can get all departments',
-        //         ], 403);
-        //     }
-    
             $departments = Department::all();
     
             return response()->json([
@@ -117,13 +109,7 @@ class DepartmentController extends Controller
                 'data' => $departments
             ], 200);
         }
-        //  catch (\Throwable $th) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => $th->getMessage()
-        //     ], 500);
-        // }
-    
+       
     
     public function deleteDepartment($id)
     {
