@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\AnimalTypeController;
-
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +59,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/adoption/update/{adoption_id}', [UserController::class, 'updateAdoption']);
     Route::get('/user/adoptions/user/{user_id}', [UserController::class, 'getUserAdoptions']);
     Route::delete('/user/adoption/delete/{adoption_id}', [UserController::class, 'deleteAdoption']);
+   // employees
+   Route::post('/user/employee/add', [EmployeeController::class, 'addEmployee']);
+   Route::post('/user/employee/update/{employee_id}', [EmployeeController::class, 'updateEmployee']);
+   Route::get('/user/employee/get/{employee_id}', [EmployeeController::class, 'getEmployee']);
+   Route::get('/user/employees/getall', [EmployeeController::class, 'getAllEmployees']);
+   Route::delete('/user/employee/delete/{employee_id}', [EmployeeController::class, 'deleteEmployee']);
 
 });
     

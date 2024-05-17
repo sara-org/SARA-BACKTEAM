@@ -68,4 +68,9 @@ public function adoptions()
 {
     return $this->hasMany(Adoption::class);
 }
+
+public function employee()
+{
+    return $this->hasOne(Employee::class, 'user_id', 'id');
+}
 }
