@@ -15,5 +15,10 @@ class Department extends Model
     {
         return $this->hasMany(Animal::class);
     }
-
+    public function feedings()
+    {
+        return $this->hasMany(Feeding::class);
+    }
+ 
 }
+

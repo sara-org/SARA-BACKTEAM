@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Donation;
 use App\Models\Adoption;
 use App\Models\Sponcership;
+use App\Models\Vaccination;
 use App\Models\ResetCodePassword;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,4 +74,13 @@ public function employee()
 {
     return $this->hasOne(Employee::class, 'user_id', 'id');
 }
+public function feedings()
+{
+    return $this->hasMany(Feeding::class);
+}
+public function vaccinations()
+{
+    return $this->hasMany(Vaccination::class);
+}
+
 }
