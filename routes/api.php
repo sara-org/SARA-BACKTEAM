@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnimalController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\AnimalTypeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
@@ -77,7 +78,12 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/employee/vaccination/{user_id}', [EmployeeController::class, 'getUserVaccinations']);
    Route::get('/user/employee/vaccinations/all', [EmployeeController::class, 'getAllVaccinations']);
    Route::delete('/user/vaccination/delete/{vaccination_id}', [EmployeeController::class, 'deleteVaccination']);
-
+  //doctors
+  Route::post('/user/doctor/add', [DoctorController::class, 'addDoctor']);
+  Route::post('/user/doctor/update/{doctor_id}', [DoctorController::class, 'updateDoctor']);
+  Route::get('/user/doctor/get/{doctor_id}', [DoctorController::class, 'getDoctor']);
+  Route::get('/user/doctors/getall', [DoctorController::class, 'getAllDoctors']);
+  Route::delete('/user/doctor/delete/{doctor_id}', [DoctorController::class, 'deleteDoctor']);
 });
     
 Route::post('/user/signup', [UserController::class, 'signUp']);

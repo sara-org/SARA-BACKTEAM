@@ -37,7 +37,7 @@ class DoctorController extends Controller
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'address' => ['required', 'string'],
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
+            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 3)],
         ]);
 
          
