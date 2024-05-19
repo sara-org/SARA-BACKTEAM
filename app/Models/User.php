@@ -5,6 +5,7 @@ use App\Models\Donation;
 use App\Models\Adoption;
 use App\Models\Sponcership;
 use App\Models\Vaccination;
+use App\Models\Doctor;
 use App\Models\ResetCodePassword;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,6 +74,10 @@ public function adoptions()
 public function employee()
 {
     return $this->hasOne(Employee::class, 'user_id', 'id');
+}
+public function doctor()
+{
+    return $this->hasOne(Doctor::class, 'user_id', 'id');
 }
 public function feedings()
 {
