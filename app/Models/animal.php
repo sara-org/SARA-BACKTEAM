@@ -26,4 +26,9 @@ class Animal extends Model
 {
     return $this->hasMany(Sponcership::class)->where('spon_status','1');
 }
+
+public function medicalRecords()
+{
+    return $this->hasMany(MedicalRecord::class);
+}
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Password;
 use App\Helper\ResponseHelper;
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\MedicalRecord;
 use App\Models\Animal;
 use App\Models\Feeding;
 use App\Models\Donation;
@@ -117,5 +118,112 @@ class DoctorController extends Controller
 
         return response()->json(ResponseHelper::success([], 'Doctor deleted'));
     }
+    public function addMedicalRecord(Request $request)
+    {
+        if (Auth::user()->role != 3) {
+            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        }
+    
+        $validator = Validator::make($request->all(), [
+            'date' => ['required', 'date'],
+            'description' => ['required', 'string'],
+            'animal_id' => ['required', 'integer', Rule::exists('animals', 'id')],
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        }
+    
+        $doctorId = Auth::user()->id;
+    
+        $data = $request->all();
+        $data['doctor_id'] = $doctorId;
+    
+        $medicalRecord = MedicalRecord::create($data);
+    
+        return response()->json(ResponseHelper::created($medicalRecord, 'Medical record created'));
+    }
+    public function updateMedicalRecord(Request $request, $id)
+{
+    if (Auth::user()->role != 3) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
 
+    $validator = Validator::make($request->all(), [
+        'date' => ['required', 'date'],
+        'description' => ['required', 'string'],
+        'animal_id' => ['required', 'integer', Rule::exists('animals', 'id')],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+    }
+
+    $doctorId = Auth::user()->id;
+
+    $medicalRecord = MedicalRecord::find($id);
+
+    if (!$medicalRecord) {
+        return response()->json(ResponseHelper::error(null, null, 'Medical record not found', 404));
+    }
+
+    if ($medicalRecord->doctor_id != $doctorId) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $data = $request->all();
+    $data['doctor_id'] = $doctorId;
+
+    $medicalRecord->update($data);
+
+    return response()->json(ResponseHelper::updated($medicalRecord, 'Medical record updated'));
+}
+
+public function getAllMedicalRecords()
+{
+    if (Auth::user()->role != 3) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $doctorId = Auth::user()->id;
+
+    $medicalRecords = MedicalRecord::where('doctor_id', $doctorId)->get();
+
+    return response()->json(ResponseHelper::success($medicalRecords, 'All Medical Records retrieved'));
+}
+
+public function getMedicalRecord($id)
+{
+    if (Auth::user()->role != 3) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $doctorId = Auth::user()->id;
+
+    $medicalRecord = MedicalRecord::where('doctor_id', $doctorId)->find($id);
+
+    if (!$medicalRecord) {
+        return response()->json(ResponseHelper::error([], null, 'Medical record not found', 404));
+    }
+
+    return response()->json(ResponseHelper::success($medicalRecord, 'Medical record retrieved'));
+}
+public function deleteMedicalRecord($id)
+{
+    if (Auth::user()->role != 3) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $doctorId = Auth::user()->id;
+
+    $medicalRecord = MedicalRecord::where('doctor_id', $doctorId)->find($id);
+
+    if (!$medicalRecord) {
+        return response()->json(ResponseHelper::error([], null, 'Medical record not found', 404));
+    }
+
+    $medicalRecord->delete();
+
+    return response()->json(ResponseHelper::success([], 'Medical record deleted'));
+}
 }

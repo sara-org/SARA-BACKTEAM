@@ -108,6 +108,34 @@ class UserController extends Controller
 
         return response()->json("logged out successfully!", Response::HTTP_OK);
     }
+    public function updateUser(Request $request, $user_id)
+{
+    if (Auth::user()->id != $user_id) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+    $validator = Validator::make($request->all(), [
+        'name' => ['required', 'string'],
+        'email' => ['required', 'email'],
+        'phone' => ['required', 'string'],
+        'gender' => ['required', 'string'],
+        'photo' => ['nullable', 'string'],
+        'address' => ['required', 'string'],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+    }
+
+    $user = User::find($user_id);
+
+    if (!$user) {
+        return response()->json(ResponseHelper::error([], null, 'User not found', 404));
+    }
+
+    $user->update($request->all());
+
+    return response()->json(ResponseHelper::updated($user, 'User updated'));
+}
     public function userForgotPassword(Request $request): JsonResponse
     {
         $data = $request->validate([

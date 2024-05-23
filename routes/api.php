@@ -20,8 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Users 
+    // Users
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
+    Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
+
     
      // Animals
     Route::post('/animal/add',[AnimalController::class,'addAnimal']);
@@ -54,7 +56,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/sponcership/update/{sponcership_id}', [EmployeeController::class, 'updateSponcership']);
     Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
     Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
-
     // Adoptions
     Route::post('/user/adoption/add', [EmployeeController::class, 'addAdoption']);
     Route::post('/user/adoption/update/{adoption_id}', [EmployeeController::class, 'updateAdoption']);
@@ -84,6 +85,13 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/user/doctor/get/{doctor_id}', [DoctorController::class, 'getDoctor']);
   Route::get('/user/doctors/getall', [DoctorController::class, 'getAllDoctors']);
   Route::delete('/user/doctor/delete/{doctor_id}', [DoctorController::class, 'deleteDoctor']);
+  //medical_records
+  Route::post('/user/doctor/medical-record/add', [DoctorController::class, 'addMedicalRecord']);
+  Route::post('/user/doctor/medical-record/update/{id}', [DoctorController::class, 'updateMedicalRecord']);
+  Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
+  Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
+  Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
+  
 });
     
 Route::post('/user/signup', [UserController::class, 'signUp']);

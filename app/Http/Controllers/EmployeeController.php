@@ -167,9 +167,9 @@ class EmployeeController extends Controller
             }
         }
 
-        if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
+        // if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
+        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
+        // }
 
         $sponcershipData = [
             'balance' => $request->input('balance'),
@@ -206,9 +206,9 @@ public function updateSponcership(Request $request, $sponcership_id)
 
         $sponcership = Sponcership::findOrFail($sponcership_id);
         $userData = $request->all();
-        if (Auth::user()->role !== '2'&& Auth::user()->role !== '4')  {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
+        // if (Auth::user()->role !== '2'&& Auth::user()->role !== '4')  {
+        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
+        // }
         $sponcershipData = [
             'balance' => $userData['balance'],
             'sponcership_date' => $userData['sponcership_date'],
@@ -230,6 +230,8 @@ public function updateSponcership(Request $request, $sponcership_id)
 public function getUserSponcerships($user_id)
 {
     try {
+   
+   //ADD ROLES
         $user = User::findOrFail($user_id);
         $sponcerships = $user->sponcerships;
 
@@ -338,6 +340,7 @@ public function addAdoption(Request $request)
 public function getUserAdoptions($user_id)
 {
     try {
+        //ADD ROLES
         $user = User::findOrFail($user_id);
         $adoptions = $user->adoptions;
 
@@ -450,6 +453,8 @@ public function updateFeeding(Request $request, $feedingId)
 public function getUserFeedings($user_id)
 {
     try {
+
+
         $user = User::findOrFail($user_id);
         $feedingDepartments = $user->feedings()->with('department')->get();
 
@@ -464,6 +469,7 @@ public function getUserFeedings($user_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+//ADD API FOR DEPARS WHICH NOT FEEDED
 public function getAllFeedings()
 {
     $feedings = Feeding::all();
