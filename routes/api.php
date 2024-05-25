@@ -9,6 +9,11 @@ use App\Http\Controllers\AnimalTypeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmergencyController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LikeController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -105,6 +110,21 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
   Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
   Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
+   // post
+   Route::post('/user/post/add', [PostController::class, 'addPost']);
+   Route::get('/user/posts', [PostController::class, 'getAllPosts']);
+   Route::get('/user/post/get/{post_id}', [PostController::class, 'getPostById']);
+   Route::put('/user/post/update/{post_id}', [PostController::class, 'updatePost']);
+   Route::delete('/user/post/delete/{post_id}', [PostController::class, 'deletePost']);
+   //comment
+   Route::post('/user/comment/add', [CommentController::class, 'addComment']);
+   Route::get('/user/comments', [CommentController::class, 'getAllComments']);
+   Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
+   Route::put('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
+   Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
+   //like
+   Route::post('/user/likes', [LikeController::class, 'likePost']);
+   Route::delete('/user/unlikes', [LikeController::class, 'unlikePost']);
 });    
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
