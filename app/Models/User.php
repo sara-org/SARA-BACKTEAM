@@ -6,6 +6,7 @@ use App\Models\Adoption;
 use App\Models\Sponcership;
 use App\Models\Vaccination;
 use App\Models\Doctor;
+use App\Models\UserEmr;
 use App\Models\ResetCodePassword;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,5 +88,8 @@ public function vaccinations()
 {
     return $this->hasMany(Vaccination::class);
 }
-
+public function userEmergencies()
+    {
+        return $this->hasMany(UserEmr::class);
+    }
 }

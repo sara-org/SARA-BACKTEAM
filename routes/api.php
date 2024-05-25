@@ -8,6 +8,8 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\AnimalTypeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EmergencyController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -91,9 +93,19 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
   Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
   Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
-  
-});
-    
+  // emergency
+  Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
+  Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
+  Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
+  Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
+  Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
+  // User Emergency
+  Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
+  Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
+  Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
+  Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
+  Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
+});    
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
 Route::post('/user/logout', [UserController::class, 'logout']);
