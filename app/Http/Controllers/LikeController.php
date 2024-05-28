@@ -5,49 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Like;
 use App\Helper\ResponseHelper;
+use App\Http\Requests\LikeRequest;
+use App\Services\LikeService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class LikeController extends Controller
 {
-    public function likePost(Request $request)
+    public function likePost(LikeRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'post_id' => 'required|exists:posts,id',
-        ]);
-
-        if ($validator->fails()) {
-            return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
-        }
-
-        $likeData = [
-            'user_id' => $request->input('user_id'),
-            'post_id' => $request->input('post_id'),
-            'like_date' => now(),
-        ];
-
-        $like = Like::create($likeData);
-
+        $like = app(LikeService::class)->likePost($request);
         return ResponseHelper::created($like, 'Post liked successfully');
     }
 
-    public function unlikePost(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'post_id' => 'required|exists:posts,id',
-        ]);
+    public function unlikePost(Request $request, $post)
+{
 
-        if ($validator->fails()) {
-            return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
-        }
+    $like = Like::where('user_id',auth('sanctum')->user()->id)->where('post_id',$post)->delete();
 
-        $userId = $request->input('user_id');
-        $postId = $request->input('post_id');
-
-        Like::where('user_id', $userId)->where('post_id', $postId)->delete();
-        Like::where('user_id', $userId)->where('post_id', $postId)->update(['like_date' => now()]);
-
+    if ($like) {
         return ResponseHelper::success([], 'Post unliked successfully');
+    } else {
+        return ResponseHelper::error([], 'Like not found', null, 404);
     }
+}
 }

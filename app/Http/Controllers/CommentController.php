@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use app\Models\Post;
-use app\Models\Comment;
+use App\Models\Comment;
 use App\Helper\ResponseHelper;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
@@ -18,7 +18,6 @@ class CommentController extends Controller
             'comment' => 'required|string',
             'user_id' => 'required|exists:users,id',
             'post_id' => 'required|exists:posts,id',
-
         ]);
 
         if ($validator->fails()) {
@@ -27,10 +26,10 @@ class CommentController extends Controller
 
         $commentData = [
             'comment' => $request->input('comment'),
-            'user_id' => $request->input('user_id'),
+            'user_id' => auth()->user()->id,
             'post_id' => $request->input('post_id'),
         ];
-        
+
         $comment = Comment::create($commentData);
 
         return ResponseHelper::created($comment, 'Comment added successfully');
@@ -48,26 +47,28 @@ class CommentController extends Controller
 
         try {
             $comment = Comment::findOrFail($comment_id);
-            $comment->text = $request->input('comment');
+            if (auth()->user()->id !== $comment->user_id) {return ResponseHelper::error([], 'Unauthorized', 'You are not authorized to update this comment', 401); }
+            $comment->comment = $request->input('comment');
             $comment->save();
-
             return ResponseHelper::success($comment, 'Comment updated successfully');
-        } catch (\Exception $e) {
+        }
+         catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to update comment', 500);
         }
     }
 
     public function deleteComment($comment_id)
-    {
-        try {
-            $comment = Comment::findOrFail($comment_id);
-            $comment->delete();
-
-            return ResponseHelper::success([], 'Comment deleted successfully');
-        } catch (\Exception $e) {
-            return ResponseHelper::error([], $e->getMessage(), 'Failed to delete comment', 500);
-        }
+{
+    try {
+        $comment = Comment::findOrFail($comment_id);
+        if (auth()->user()->id !== $comment->user_id)
+        { return ResponseHelper::error([], 'Unauthorized', 'You are not authorized to delete this comment', 401);}
+        $comment->delete();
+        return ResponseHelper::success([], 'Comment deleted successfully');
+    } catch (\Exception $e) {
+        return ResponseHelper::error([], $e->getMessage(), 'Failed to delete comment', 500);
     }
+}
 
     public function getCommentById($id)
     {

@@ -31,14 +31,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
 
-    
+
      // Animals
     Route::post('/animal/add',[AnimalController::class,'addAnimal']);
     Route::post('/animal/update/{animal_id}',[AnimalController::class,'updateAnimal']);
     Route::get('/animals/getall',[AnimalController::class,'getAllAnimals']);
     Route::get('/animal/get/{animal_id}',[AnimalController::class,'getAnimal']);
     Route::delete('/animal/delete/{animal_id}',[AnimalController::class,'deleteAnimal']);
-    
+
     // Animal Types
     Route::post('/animaltype/add',[AnimalTypeController::class,'addAnimalType']);
     Route::post('/animaltype/update/{animaltype_id}',[AnimalTypeController::class,'updateAnimalType']);
@@ -114,18 +114,18 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/post/add', [PostController::class, 'addPost']);
    Route::get('/user/posts', [PostController::class, 'getAllPosts']);
    Route::get('/user/post/get/{post_id}', [PostController::class, 'getPostById']);
-   Route::put('/user/post/update/{post_id}', [PostController::class, 'updatePost']);
+   Route::post('/user/post/update/{post_id}', [PostController::class, 'updatePost']);
    Route::delete('/user/post/delete/{post_id}', [PostController::class, 'deletePost']);
    //comment
    Route::post('/user/comment/add', [CommentController::class, 'addComment']);
    Route::get('/user/comments', [CommentController::class, 'getAllComments']);
    Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
-   Route::put('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
+   Route::post('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
    Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
    //like
    Route::post('/user/likes', [LikeController::class, 'likePost']);
-   Route::delete('/user/unlikes', [LikeController::class, 'unlikePost']);
-});    
+   Route::delete('/user/unlikes/{id}', [LikeController::class, 'unlikePost']);
+});
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
 Route::post('/user/logout', [UserController::class, 'logout']);

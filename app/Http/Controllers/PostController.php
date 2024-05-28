@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use app\Models\Post;
+use App\Models\Post;
 use App\Helper\ResponseHelper;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
@@ -26,7 +26,7 @@ class PostController extends Controller
             'text' => $request->input('text'),
             'user_id' => $request->input('user_id'),
         ];
-        
+
         $post = Post::create($postData);
 
         return ResponseHelper::created($post, 'Post added successfully');
@@ -68,7 +68,7 @@ class PostController extends Controller
     public function getPostById($id)
     {
         try {
-            $post = Post::findOrFail($id);
+            $post = Post::with('likes','comments')->findOrFail($id);
 
             return ResponseHelper::success($post, 'Post retrieved successfully');
         } catch (\Exception $e) {
@@ -79,7 +79,7 @@ class PostController extends Controller
     public function getAllPosts()
     {
         try {
-            $posts = Post::all();
+            $posts = Post::with('likes','comments')->get();
 
             return ResponseHelper::success($posts, 'Posts retrieved successfully');
         } catch (\Exception $e) {
