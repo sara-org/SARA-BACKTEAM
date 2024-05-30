@@ -40,9 +40,10 @@ class UserController extends Controller
             'gender' => ['required', 'string'],
             'photo' => ['nullable' , 'string'],
             'address' => ['required', 'string'],
+            'wallet' => ['numeric'],
         ]);
 
-        if ($validator->fails()) 
+        if ($validator->fails())
         {
             return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -53,7 +54,7 @@ class UserController extends Controller
         $user = User::create($requestData);
 
         $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
-        
+
         $data["user"] = $user;
         $data["tokenType"] = 'Bearer';
         $data["access_token"] = $user->createToken("API TOKEN")->plainTextToken;
@@ -69,7 +70,8 @@ class UserController extends Controller
             'password' => ['required', 'min:8'],
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -120,6 +122,7 @@ class UserController extends Controller
         'gender' => ['required', 'string'],
         'photo' => ['nullable', 'string'],
         'address' => ['required', 'string'],
+        'wallet' => ['numeric'],
     ]);
 
     if ($validator->fails()) {
@@ -233,7 +236,7 @@ class UserController extends Controller
             'message' => 'code.sent'
         ], Response::HTTP_OK);
     }
-    
+
     public function verifyAccount(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -273,7 +276,7 @@ class UserController extends Controller
 
     public function changeRole(Request $request, $user_id)
 {
-    
+
     try {
         if (!auth()->check()) {
             return response()->json([
@@ -312,8 +315,44 @@ class UserController extends Controller
     }
 }
 
+public function addWallet(Request $request, $user_id)
+{
+    $user = User::findOrFail($user_id);
+    $user->wallet = $request->input('wallet');
+    $user->save();
 
+    return ResponseHelper::success('Wallet added successfully');
+}
+public function updateWallet(Request $request, $user_id)
+{
+    $user = User::findOrFail($user_id);
+    $user->wallet = $request->input('wallet');
+    $user->save();
+    return ResponseHelper::success('Wallet updated successfully');
+}
+     public function getWallet($user_id)
+    {
+        $user = User::findOrFail($user_id);
+        $wallet = $user->wallet;
 
+        return ResponseHelper::success('Wallet retrieved successfully', ['wallet' => $wallet]);
+    }
+    public function getAllWallets()
+    {
+        $users = User::all();
+        $wallets = $users->pluck('wallet')->toArray();
+
+        return ResponseHelper::success('All wallets retrieved successfully', ['wallets' => $wallets]);
+    }
+
+    public function removeWallet($user_id)
+    {
+        $user = User::findOrFail($user_id);
+        $user->wallet = 0;
+        $user->save();
+
+        return ResponseHelper::success('Wallet deleted successfully');
+    }
 public function addDonation(Request $request)
 {
     try {
@@ -347,7 +386,7 @@ public function updateDonation(Request $request, $donation_id)
     try {
         $validator = Validator::make($request->all(), [
             'balance' => 'required|numeric',
-          
+
         ]);
 
         if ($validator->fails()) {
@@ -389,12 +428,11 @@ public function deleteDonation($donation_id)
 {
     try {
         $donation = Donation::findOrFail($donation_id);
-        
-       
+
         if ($donation->user_id !== auth()->user()->id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        
+
         $donation->delete();
 
         return ResponseHelper::success([], 'Donation deleted successfully');

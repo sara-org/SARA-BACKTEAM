@@ -16,7 +16,6 @@ class CommentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'comment' => 'required|string',
-            'user_id' => 'required|exists:users,id',
             'post_id' => 'required|exists:posts,id',
         ]);
 
@@ -72,15 +71,22 @@ class CommentController extends Controller
 
     public function getCommentById($id)
     {
-        try {
+
             $comment = Comment::findOrFail($id);
+            return ResponseHelper::success($comment, null,'Comment retrieved successfully',200);
 
-            return ResponseHelper::success($comment, 'Comment retrieved successfully');
-        } catch (\Exception $e) {
-            return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve comment', 500);
-        }
     }
+    public function getUserComments()
+{
+    try {
+        $user = auth()->user();
+        $comments = Comment::where('user_id', $user->id)->get();
 
+        return ResponseHelper::success($comments, 'User comments retrieved successfully');
+    } catch (\Exception $e) {
+        return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve user comments', 500);
+    }
+}
     public function getAllComments()
     {
         try {

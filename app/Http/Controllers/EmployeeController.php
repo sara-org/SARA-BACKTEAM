@@ -1,29 +1,27 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Vaccination;
-use Illuminate\Support\Facades\Sanctum;
-use Illuminate\Support\Facades\Password;
-use App\Helper\ResponseHelper;
-use App\Models\User;
-use App\Models\Employee;
-use App\Models\Animal;
-use App\Models\Feeding;
-use App\Models\Donation;
-use App\Models\Adoption;
-use App\Models\Sponcership;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
 use Throwable;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Animal;
+use App\Models\Feeding;
+use App\Models\Adoption;
+use App\Models\Donation;
+use App\Models\Employee;
+use App\Models\Department;
+use App\Models\Sponcership;
+use App\Models\Vaccination;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Helper\ResponseHelper;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Sanctum;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EmployeeController extends Controller
@@ -32,20 +30,20 @@ class EmployeeController extends Controller
     {
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        }  
+        }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'job_title' => ['required', 'string'],
-            'start_time' => ['required', 'date_format:H:i:s'], 
+            'start_time' => ['required', 'date_format:H:i:s'],
             'end_time' => [
                 'required',
                 'date_format:H:i:s',
-                Rule::notIn([$request->input('start_time')]) 
+                Rule::notIn([$request->input('start_time')])
             ],
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
         ]);
 
-         
+
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
@@ -59,15 +57,15 @@ class EmployeeController extends Controller
     {
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        } 
+        }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'job_title' => ['required', 'string'],
-            'start_time' => ['required', 'date_format:H:i:s'], 
+            'start_time' => ['required', 'date_format:H:i:s'],
             'end_time' => [
                 'required',
                 'date_format:H:i:s',
-                Rule::notIn([$request->input('start_time')]) 
+                Rule::notIn([$request->input('start_time')])
             ],
            // 'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
         ]);
@@ -88,7 +86,7 @@ class EmployeeController extends Controller
     }
     public function getAllEmployees()
     {
-        
+
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
@@ -100,10 +98,10 @@ class EmployeeController extends Controller
 
     public function getEmployee($employee_id)
     {
-        
+
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        } 
+        }
         $employee = Employee::find($employee_id);
 
         if (!$employee) {
@@ -114,8 +112,8 @@ class EmployeeController extends Controller
     }
 
     public function deleteEmployee($employee_id)
-    {    
-       
+    {
+
       if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
@@ -138,7 +136,7 @@ class EmployeeController extends Controller
             'balance' => 'required|numeric',
         ]);
 
-        if ($validator->fails()) 
+        if ($validator->fails())
         {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
@@ -158,7 +156,7 @@ class EmployeeController extends Controller
         if ($lastSponcership) {
             $lastSponcershipDate = Carbon::parse($lastSponcership->sponcership_date);
             $currentDate = Carbon::now();
-        
+
             if ($currentDate->diffInMonths($lastSponcershipDate) < 1) {
                 return response()->json([
                     'status' => 'error',
@@ -167,13 +165,11 @@ class EmployeeController extends Controller
             }
         }
 
-        // if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
-        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
-        // }
+
 
         $sponcershipData = [
             'balance' => $request->input('balance'),
-            'sponcership_date' => Carbon::now(), 
+            'sponcership_date' => Carbon::now(),
             'user_id' => $request->input('user_id'),
             'animal_id' => $request->input('animal_id')
         ];
@@ -230,7 +226,7 @@ public function updateSponcership(Request $request, $sponcership_id)
 public function getUserSponcerships($user_id)
 {
     try {
-   
+
    //ADD ROLES
         $user = User::findOrFail($user_id);
         $sponcerships = $user->sponcerships;
@@ -246,12 +242,12 @@ public function deleteSponcership($sponcership_id)
 {
     try {
         $sponcership = Sponcership::findOrFail($sponcership_id);
-        
-       
+
+
         if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        
+
         $sponcership->delete();
 
         return ResponseHelper::success([], 'Sponcership deleted successfully');
@@ -286,7 +282,7 @@ public function addAdoption(Request $request)
                 'message' => 'Adoption already exists for this animal',
             ], 400);
         }
-        
+
         $adoptionData = [
             'adoption_date' => now()->format('Y-m-d H:i:s'),
             'user_id' => $request->input('user_id'),
@@ -301,7 +297,8 @@ public function addAdoption(Request $request)
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
-}public function updateAdoption(Request $request, $adoption_id)
+}
+public function updateAdoption(Request $request, $adoption_id)
 {
     try {
         $validator = Validator::make($request->all(), [
@@ -320,10 +317,10 @@ public function addAdoption(Request $request)
         }
         $adoption = Adoption::findOrFail($adoption_id);
         $userData = $request->all();
-        
+
         $adoptionData = [
             'adop_status' => $request->input('adop_status'),
-            'adoption_date' => $request->input('adoption_date'),          
+            'adoption_date' => $request->input('adoption_date'),
             'animal_id' => $request->input('animal_id'),
             'user_id' => $request->input('user_id')
         ];
@@ -355,12 +352,12 @@ public function deleteAdoption($adoption_id)
 {
     try {
         $adoption = Adoption::findOrFail($adoption_id);
-        
-       
+
+
         if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        
+
         $adoption->delete();
 
         return ResponseHelper::success([], 'Adoption deleted successfully');
@@ -377,12 +374,11 @@ public function addFeeding(Request $request)
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
-            'feeding_date' => 'required|date_format:H:i:s',
         ]);
         $existingFeeding = Feeding::where('department_id', $request->input('department_id'))
-        ->where('feeding_date', $request->input('feeding_date'))
+        ->orWhere('feeding_date', $request->input('feeding_date'))
         ->first();
-    
+
     if ($existingFeeding) {
         return response()->json([
             'status' => 'error',
@@ -402,7 +398,7 @@ public function addFeeding(Request $request)
         $feedingData = [
             'department_id' => $request->input('department_id'),
             'user_id' => $request->input('user_id'),
-            'feeding_date' => $request->input('feeding_date'),
+            'feeding_date' => carbon::now()->format('Y-m-d H-i-s'),
         ];
 
         $feeding = Feeding::create($feedingData);
@@ -414,13 +410,13 @@ public function addFeeding(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+
 public function updateFeeding(Request $request, $feedingId)
 {
     try {
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
-            'feeding_date' => 'required|date_format:H:i:s',
         ]);
 
         if ($validator->fails()) {
@@ -439,17 +435,32 @@ public function updateFeeding(Request $request, $feedingId)
 
         $feeding->department_id = $request->input('department_id');
         $feeding->user_id = $request->input('user_id');
-        $feeding->feeding_date = $request->input('feeding_date');
+        $feeding->feeding_date = Carbon::now()->format('Y-m-d H:i:s');
         $feeding->save();
 
         return ResponseHelper::success($feeding, 'Feeding updated successfully');
-    } catch (ValidationException $exception) {
+    }
+    catch
+     (ValidationException $exception) {
         return ResponseHelper::error([], null, $exception->getMessage(), 400);
-    } catch (\Throwable $th) {
+    }
+
+    catch (\Throwable $th)
+    {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
 
+public function getUnfedDepartments()
+{
+    try {
+        $unfedDepartments = Department::whereDoesntHave('feedings')->get();
+
+        return ResponseHelper::success($unfedDepartments, 'Unfed departments retrieved successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
 public function getUserFeedings($user_id)
 {
     try {
@@ -480,12 +491,12 @@ public function deleteFeeding($feeding_id)
 {
     try {
         $feeding = Feeding::findOrFail($feeding_id);
-        
-       
+
+
         if (Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        
+
         $feeding->delete();
 
         return ResponseHelper::success([], 'Feeding deleted successfully');
@@ -506,7 +517,7 @@ public function addVaccination(Request $request)
         $existingVaccination = Vaccination::where('department_id', $request->input('department_id'))
         ->where('vaccination_date', $request->input('vaccination_date'))
         ->first();
-    
+
     if ($existingVaccination) {
         return response()->json([
             'status' => 'error',
@@ -600,13 +611,12 @@ public function getAllVaccinations()
 public function deleteVaccination($vaccination_id)
 {
     try {
+
         $vaccination = Vaccination::findOrFail($vaccination_id);
-        
-       
         if (Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        
+
         $vaccination->delete();
 
         return ResponseHelper::success([], 'Vaccination deleted successfully');

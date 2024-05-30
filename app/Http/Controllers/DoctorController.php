@@ -34,14 +34,14 @@ class DoctorController extends Controller
     {
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        }  
+        }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'address' => ['required', 'string'],
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 3)],
         ]);
 
-         
+
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
@@ -49,13 +49,13 @@ class DoctorController extends Controller
         $doctor = Doctor::create($request->all());
 
         return response()->json(ResponseHelper::created($doctor , ' Doctor created'));
-    }  
+    }
 
     public function updateDoctor(Request $request, $doctor_id)
     {
         if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        } 
+        }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'address' => ['required', 'string'],
@@ -77,10 +77,6 @@ class DoctorController extends Controller
     }
     public function getAllDoctors()
     {
-        
-        // if (Auth::user()->role != 2) {
-        //     return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        // }
 
         $doctors = Doctor::all();
 
@@ -89,10 +85,6 @@ class DoctorController extends Controller
 
     public function getDoctor($doctor_id)
     {
-        
-        // if (Auth::user()->role != 2) {
-        //     return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-        // } 
         $doctor = Doctor::find($doctor_id);
 
         if (!$doctor) {
@@ -103,8 +95,8 @@ class DoctorController extends Controller
     }
 
     public function deleteDoctor($doctor_id)
-    {    
-       
+    {
+
       if (Auth::user()->role != 2) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
@@ -123,24 +115,24 @@ class DoctorController extends Controller
         if (Auth::user()->role != 3) {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
-    
+
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
             'description' => ['required', 'string'],
             'animal_id' => ['required', 'integer', Rule::exists('animals', 'id')],
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
-    
+
         $doctorId = Auth::user()->id;
-    
+
         $data = $request->all();
         $data['doctor_id'] = $doctorId;
-    
+
         $medicalRecord = MedicalRecord::create($data);
-    
+
         return response()->json(ResponseHelper::created($medicalRecord, 'Medical record created'));
     }
     public function updateMedicalRecord(Request $request, $id)

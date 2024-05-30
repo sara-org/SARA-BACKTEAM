@@ -31,6 +31,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
 
+    // wallet
+    Route::post('/user/wallet/add/{user_id}', [UserController::class, 'addWallet']);
+    Route::post('/user/wallet/update/{user_id}', [UserController::class, 'updateWallet']);
+    Route::get('/user/wallet/get/{user_id}', [UserController::class, 'getWallet']);
+    Route::get('/user/wallets', [UserController::class, 'getAllWallets']);
+    Route::delete('/user/wallet/delete/{user_id}', [UserController::class, 'removeWallet']);
 
      // Animals
     Route::post('/animal/add',[AnimalController::class,'addAnimal']);
@@ -78,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/employee/feeding/add', [EmployeeController::class, 'addFeeding']);
    Route::post('/user/employee/feeding/update/{feeding_id}', [EmployeeController::class, 'updateFeeding']);
    Route::get('/user/employee/feeding/{user_id}', [EmployeeController::class, 'getUserFeedings']);
+   Route::get('/user/unfed-departments', [EmployeeController::class, 'getUnfedDepartments']);
    Route::get('/user/employee/feedings/all', [EmployeeController::class, 'getAllFeedings']);
    Route::delete('/user/feeding/delete/{feeding_id}', [EmployeeController::class, 'deleteFeeding']);
    // vaccination
@@ -118,9 +125,10 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::delete('/user/post/delete/{post_id}', [PostController::class, 'deletePost']);
    //comment
    Route::post('/user/comment/add', [CommentController::class, 'addComment']);
-   Route::get('/user/comments', [CommentController::class, 'getAllComments']);
-   Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
    Route::post('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
+   Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
+   Route::get('/user/usercomments', [CommentController::class, 'getUserComments']);
+   Route::get('/user/comments', [CommentController::class, 'getAllComments']);
    Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
    //like
    Route::post('/user/likes', [LikeController::class, 'likePost']);

@@ -16,7 +16,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
- 
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable ,HasApiTokens;
@@ -34,6 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'address',
         'gender',
         'photo',
+        'wallet',
         'role_id'
     ];
 

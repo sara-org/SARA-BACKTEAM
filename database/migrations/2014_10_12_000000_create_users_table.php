@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female']);
             $table->longText('photo')->nullable();
             $table->enum('role', ['1', '2', '3', '4']);
+            $table->double('wallet')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
