@@ -12,6 +12,7 @@ use App\Http\Controllers\EmergencyController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\CenterController;
 
 
 
@@ -80,14 +81,14 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/employee/get/{employee_id}', [EmployeeController::class, 'getEmployee']);
    Route::get('/user/employees/getall', [EmployeeController::class, 'getAllEmployees']);
    Route::delete('/user/employee/delete/{employee_id}', [EmployeeController::class, 'deleteEmployee']);
-   // feeding
+   // feedings
    Route::post('/user/employee/feeding/add', [EmployeeController::class, 'addFeeding']);
    Route::post('/user/employee/feeding/update/{feeding_id}', [EmployeeController::class, 'updateFeeding']);
    Route::get('/user/employee/feeding/{user_id}', [EmployeeController::class, 'getUserFeedings']);
    Route::get('/user/unfed-departments', [EmployeeController::class, 'getUnfedDepartments']);
    Route::get('/user/employee/feedings/all', [EmployeeController::class, 'getAllFeedings']);
    Route::delete('/user/feeding/delete/{feeding_id}', [EmployeeController::class, 'deleteFeeding']);
-   // vaccination
+   // vaccinations
    Route::post('/user/employee/vaccination/add', [EmployeeController::class, 'addVaccination']);
    Route::post('/user/employee/vaccination/update/{vaccination_id}', [EmployeeController::class, 'updateVaccination']);
    Route::get('/user/employee/vaccination/{user_id}', [EmployeeController::class, 'getUserVaccinations']);
@@ -105,34 +106,43 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
   Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
   Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
-  // emergency
+  // emergencies
   Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
   Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
   Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
   Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
   Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
-  // User Emergency
+  // User Emergencies
   Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
   Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
   Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
   Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
   Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
-   // post
+   // posts
    Route::post('/user/post/add', [PostController::class, 'addPost']);
    Route::get('/user/posts', [PostController::class, 'getAllPosts']);
    Route::get('/user/post/get/{post_id}', [PostController::class, 'getPostById']);
    Route::post('/user/post/update/{post_id}', [PostController::class, 'updatePost']);
    Route::delete('/user/post/delete/{post_id}', [PostController::class, 'deletePost']);
-   //comment
+   //comments
    Route::post('/user/comment/add', [CommentController::class, 'addComment']);
    Route::post('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
    Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
    Route::get('/user/usercomments', [CommentController::class, 'getUserComments']);
    Route::get('/user/comments', [CommentController::class, 'getAllComments']);
    Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
-   //like
+   //likes
    Route::post('/user/likes', [LikeController::class, 'likePost']);
    Route::delete('/user/unlikes/{id}', [LikeController::class, 'unlikePost']);
+   // center
+   Route::post('/user/admin/text/add', [CenterController::class, 'addText']);
+   Route::post('/user/admin/text/update/{centerinfo_id', [CenterController::class, 'updateText']);
+   Route::get('/user/admin/text/get/{centerinfo_id', [CenterController::class, 'getText']);
+   Route::get('/user/admin/text/delete/{centerinfo_id', [CenterController::class, 'deleteText']);
+    Route::post('/user/admin/image/add', [CenterController::class, 'addImage']);
+    Route::post('/user/admin/image/update/{centerinfo_id', [CenterController::class, 'updateImage']);
+    Route::get('/user/admin/image/get/{centerinfo_id', [CenterController::class, 'getImage']);
+    Route::get('/user/admin/image/delete/{centerinfo_id', [CenterController::class, 'deleteImage']);
 });
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);

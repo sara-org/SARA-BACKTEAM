@@ -27,7 +27,7 @@ class AnimalController extends Controller
             ]);
 
             if ($validator->fails())
-            
+
             {
                 return response()->json(
                 [
@@ -38,10 +38,10 @@ class AnimalController extends Controller
             }
 
             $user = Auth::user();
-        
+
             if ($user->role !== '4' && $user->role !== '2') {
-        
-            
+
+
                 return response()->json(
                 [
                     'status' => false,
@@ -70,7 +70,7 @@ class AnimalController extends Controller
             'health' => $request->health,
             'animaltype_id' => $request->animaltype_id,
             'department_id' => $request->department_id,
-        ]); 
+        ]);
             return response()->json([
                 'status' => true,
                 'message' => 'Animal created successfully',
@@ -89,8 +89,8 @@ class AnimalController extends Controller
             'animaltype_id' => 'required|exists:animaltypes,id',
             'department_id' => 'required|exists:departments,id'
         ]);
-    
-        if ($validator->fails()) 
+
+        if ($validator->fails())
         {
             return response()->json([
                 'status' => false,
@@ -98,25 +98,25 @@ class AnimalController extends Controller
                 'errors' => $validator->errors(),
             ], 400);
         }
-    
+
         $user = Auth::user();
-    
+
         if ($user->role !== '4' && $user->role !== '2') {
         return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized access',
             ], 401);
         }
-    
+
         $animal = Animal::find($id);
-    
+
         if (!$animal) {
             return response()->json([
                 'status' => false,
                 'message' => 'Animal not found',
             ], 404);
         }
-    
+
         $animal->name = $request->name;
         $animal->age = $request->age;
         $animal->photo = $request->photo;
@@ -125,7 +125,7 @@ class AnimalController extends Controller
         $animal->animaltype_id = $request->animaltype_id;
         $animal->department_id = $request->department_id;
         $animal->save();
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Animal updated successfully',
@@ -133,18 +133,18 @@ class AnimalController extends Controller
         ], 200);
     }
 
-    
+
     public function getAnimal($id)
     {
-        $animal = Animal::with('adoptions','sponcerships')->find($id);
-    
+        $animal = Animal::with('adoptions','sponcerships','animalType:id,type','departments:id,name')->find($id);
+
         if (!$animal) {
             return response()->json([
                 'status' => false,
                 'message' => 'Animal not found',
             ], 404);
         }
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Animal retrieved successfully',
@@ -152,11 +152,11 @@ class AnimalController extends Controller
         ], 200);
     }
     public function getAllAnimals()
-    {    
+    {
             $animals = Animal::all()->toArray();
             return ResponseHelper::success($animals,null,'Animals Retrieved Successfully',200);
     }
-    
+
     public function deleteAnimal($id)
     {
        $animal=app(AnimalService::class)->deleteAnimal($id);
