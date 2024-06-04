@@ -66,13 +66,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/donation/delete/{donation_id}', [UserController::class, 'deleteDonation']);
 
     // Sponcerships
-    Route::post('/user/sponcership/add', [EmployeeController::class, 'addSponcership']);
-    Route::post('/user/sponcership/update/{sponcership_id}', [EmployeeController::class, 'updateSponcership']);
+    Route::post('/user/sponcership/req', [EmployeeController::class, 'reqSponcership']);
+    Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
     Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
     Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
     // Adoptions
-    Route::post('/user/adoption/add', [EmployeeController::class, 'addAdoption']);
-    Route::post('/user/adoption/update/{adoption_id}', [EmployeeController::class, 'updateAdoption']);
+    Route::post('/user/adoption/Req', [EmployeeController::class, 'ReqAdoption']);
+    Route::post('/user/adoption/updatereq/{adoption_id}', [EmployeeController::class, 'ApproveAdoption']);
     Route::get('/user/adoptions/user/{user_id}', [EmployeeController::class, 'getUserAdoptions']);
     Route::delete('/user/adoption/delete/{adoption_id}', [EmployeeController::class, 'deleteAdoption']);
    // employees

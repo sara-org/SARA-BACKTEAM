@@ -136,7 +136,7 @@ class AnimalController extends Controller
 
     public function getAnimal($id)
     {
-        $animal = Animal::with('adoptions','sponcerships','animalType:id,type','departments:id,name')->find($id);
+        $animal = Animal::with('adoptions','sponcerships')->find($id);
 
         if (!$animal) {
             return response()->json([

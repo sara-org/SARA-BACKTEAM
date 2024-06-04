@@ -13,7 +13,6 @@ class Adoption extends Model
         'adoption_date',
         'user_id',
         'animal_id',
-        
        ];
        public function user()
        {

@@ -7,19 +7,14 @@ use App\Models\User;
 use App\Models\Animal;
 use App\Models\Feeding;
 use App\Models\Adoption;
-use App\Models\Donation;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Sponcership;
 use App\Models\Vaccination;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Helper\ResponseHelper;
 use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Sanctum;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -67,10 +62,7 @@ class EmployeeController extends Controller
                 'date_format:H:i:s',
                 Rule::notIn([$request->input('start_time')])
             ],
-           // 'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
         ]);
-
-
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
@@ -127,95 +119,82 @@ class EmployeeController extends Controller
 
         return response()->json(ResponseHelper::success([], 'Employee deleted'));
     }
-    public function addSponcership(Request $request)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'animal_id' => 'required|exists:animals,id',
-            'balance' => 'required|numeric',
-        ]);
+    public function reqSponcership(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'animal_id' => 'required|exists:animals,id',
+                'balance' => 'required|numeric',
+            ]);
 
-        if ($validator->fails())
-        {
-            throw ValidationException::withMessages($validator->errors()->toArray());
-        }
+            if ($validator->fails())
+            {
+                throw new ValidationException($validator);
+            }
+            $user = Auth::user();
+            $animal = Animal::findOrFail($request->input('animal_id'));
+            $wallet = $user->wallet;
+            $adoption = Adoption::where('animal_id', $animal->id)->first();
 
-        $animal = Animal::findOrFail($request->input('animal_id'));
-        $adoption = Adoption::where('animal_id', $animal->id)->first();
-
-        if ($adoption && $adoption->adop_status == 1) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Animal is already adopted',
-            ], 400);
-        }
-
-        $lastSponcership = Sponcership::where('animal_id', $animal->id)->latest()->first();
-
-        if ($lastSponcership) {
-            $lastSponcershipDate = Carbon::parse($lastSponcership->sponcership_date);
-            $currentDate = Carbon::now();
-
-            if ($currentDate->diffInMonths($lastSponcershipDate) < 1) {
+            if ($adoption && $adoption->adop_status == 1) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Cannot add new sponsorship within a month',
+                    'message' => 'Animal is already adopted',
                 ], 400);
             }
+            $lastSponcership = Sponcership::where('animal_id', $animal->id)->latest()->first();
+            if ($lastSponcership)
+            {
+                $lastSponcershipDate = Carbon::parse($lastSponcership->sponcership_date);
+                $currentDate = Carbon::now();
+                if ($currentDate->diffInMonths($lastSponcershipDate) < 1) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Cannot add new sponsorship within a month',
+                    ], 400);
+                }
+            }
+            if ($wallet < $request->input('balance'))
+            {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Insufficient balance',
+                ], 400);
+            }
+            $sponcershipData = [
+                'sponcership_date' => Carbon::now(),
+                'user_id' => $user->id,
+                'animal_id' => $request->input('animal_id'),
+                'spon_status' => 0,
+                'balance' => $request->input('balance'),
+            ];
+            $sponcership = Sponcership::create($sponcershipData);
+            $user->save();
+            return ResponseHelper::created($sponcership, 'Sponcership requested successfully');
+        } catch (ModelNotFoundException $exception) {
+            return ResponseHelper::error([], null, 'User or animal not found', 404);
+        } catch (ValidationException $exception) {
+            return ResponseHelper::error([], null, $exception->errors(), 422);
+        } catch (Throwable $th) {
+            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-
-
-
-        $sponcershipData = [
-            'balance' => $request->input('balance'),
-            'sponcership_date' => Carbon::now(),
-            'user_id' => $request->input('user_id'),
-            'animal_id' => $request->input('animal_id')
-        ];
-
-        $sponcership = Sponcership::create($sponcershipData);
-
-        return ResponseHelper::created($sponcership, 'Sponcership added successfully');
-    } catch (ModelNotFoundException $exception) {
-        return ResponseHelper::error([], null, 'User or animal not found', 404);
-    } catch (ValidationException $exception) {
-        return ResponseHelper::error([], null, $exception->getMessage(), 422);
-    } catch (Throwable $th) {
-        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
-}
-public function updateSponcership(Request $request, $sponcership_id)
+public function ApproveSponcership(Request $request, $sponcershipId)
 {
     try {
-        $validator = Validator::make($request->all(), [
-            'balance' => 'required|numeric',
-            'sponcership_date' => 'required|date',
-            'spon_status' => 'boolean',
-            'user_id' => 'required|exists:users,id',
-            'animal_id' => 'required|exists:animals,id',
-        ]);
-
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
-        $sponcership = Sponcership::findOrFail($sponcership_id);
-        $userData = $request->all();
-        // if (Auth::user()->role !== '2'&& Auth::user()->role !== '4')  {
-        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
-        // }
-        $sponcershipData = [
-            'balance' => $userData['balance'],
-            'sponcership_date' => $userData['sponcership_date'],
-            'spon_status' => $userData['spon_status'],
-            'user_id' => $request->input('user_id'),
-            'animal_id' => $request->input('animal_id')
-        ];
+        $sponcership = Sponcership::findOrFail($sponcershipId);
+        $sponcership->spon_status = 1;
+        $sponcership->save();
 
-        $sponcership->update($sponcershipData);
+        $user = $sponcership->user;
+        $user->wallet -= $sponcership->balance;
+        $user->save();
 
-        return ResponseHelper::updated($sponcership, 'Sponcership updated successfully');
+        return ResponseHelper::success($sponcership, 'Sponcership approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Sponcership not found', 404);
     } catch (Throwable $th) {
@@ -223,14 +202,16 @@ public function updateSponcership(Request $request, $sponcership_id)
     }
 }
 
+
 public function getUserSponcerships($user_id)
 {
     try {
 
-   //ADD ROLES
-        $user = User::findOrFail($user_id);
-        $sponcerships = $user->sponcerships;
-
+        $loggedInUser = Auth::user();
+        if ($loggedInUser->role !== '2' && $loggedInUser->id !== $user_id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $sponcerships = Sponcership::where('user_id', $user_id)->get();
         return ResponseHelper::success($sponcerships, 'User sponcerships retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);
@@ -257,21 +238,15 @@ public function deleteSponcership($sponcership_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-public function addAdoption(Request $request)
+public function ReqAdoption(Request $request)
 {
     try {
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
             'animal_id' => 'required|exists:animals,id',
         ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
-        }
-
-        if (Auth::user()->role !== '2'&& Auth::user()->role !== '4')
-        {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
         $animal = Animal::findOrFail($request->input('animal_id'));
@@ -285,62 +260,49 @@ public function addAdoption(Request $request)
 
         $adoptionData = [
             'adoption_date' => now()->format('Y-m-d H:i:s'),
-            'user_id' => $request->input('user_id'),
-            'animal_id' => $request->input('animal_id')
+            'user_id' => Auth::user()->id,
+            'animal_id' => $request->input('animal_id'),
+            'adop_status' => 0,
         ];
 
         $adoption = Adoption::create($adoptionData);
 
-        return ResponseHelper::created($adoption, 'Adoption added successfully');
+        return ResponseHelper::created($adoption, 'Adoption requested successfully');
     } catch (ModelNotFoundException $exception) {
-        return ResponseHelper::error([], null, 'User or animal not found', 404);
+        return ResponseHelper::error([], null, 'Animal not found', 404);
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-public function updateAdoption(Request $request, $adoption_id)
+
+public function ApproveAdoption(Request $request, $adoptionId)
 {
     try {
-        $validator = Validator::make($request->all(), [
-            'user_id'=> 'required|exists:users,id',
-            'animal_id' => 'required|exists:animals,id',
-            'adop_status' => 'boolean',
-            'adoption_date' => 'required|date',
-        ]);
-
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
-        }
-        if (Auth::user()->role !== '2'&& Auth::user()->role !== '4')
-        {
+        if (Auth::user()->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        $adoption = Adoption::findOrFail($adoption_id);
-        $userData = $request->all();
 
-        $adoptionData = [
-            'adop_status' => $request->input('adop_status'),
-            'adoption_date' => $request->input('adoption_date'),
-            'animal_id' => $request->input('animal_id'),
-            'user_id' => $request->input('user_id')
-        ];
+        $adoption = Adoption::findOrFail($adoptionId);
+        $adoption->adop_status = 1;
+        $adoption->save();
 
-        $adoption->update($adoptionData);
 
-        return ResponseHelper::updated($adoption, 'Adoption updated successfully');
+        return ResponseHelper::success($adoption, 'Adoption approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Adoption not found', 404);
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+
 public function getUserAdoptions($user_id)
 {
     try {
-        //ADD ROLES
-        $user = User::findOrFail($user_id);
-        $adoptions = $user->adoptions;
-
+        $loggedInUser = Auth::user();
+        if ($loggedInUser->role !== '2' && $loggedInUser->id !== $user_id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $adoptions = Adoption::where('user_id', $user_id)->get();
         return ResponseHelper::success($adoptions, 'User adoptions retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);
