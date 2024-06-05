@@ -143,6 +143,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/admin/image/update/{centerinfo_id', [CenterController::class, 'updateImage']);
     Route::get('/user/admin/image/get/{centerinfo_id', [CenterController::class, 'getImage']);
     Route::get('/user/admin/image/delete/{centerinfo_id', [CenterController::class, 'deleteImage']);
+    //working times
+    Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
+    Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
+    Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
+    Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
+
 });
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);

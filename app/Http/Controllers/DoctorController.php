@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Sanctum;
 use Illuminate\Support\Facades\Password;
 use App\Helper\ResponseHelper;
 use App\Models\User;
+use App\Models\WorkingHours;
 use App\Models\MedicalRecord;
 use App\Models\Animal;
 use App\Models\Doctor;
@@ -104,6 +105,80 @@ class DoctorController extends Controller
         $doctor->delete();
 
         return response()->json(ResponseHelper::success([], 'Doctor deleted'));
+    }
+    public function addWorkingHours(Request $request)
+    {
+        if (Auth::user()->role != 3) {
+            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        }
+
+        $doctorId = auth('sanctum')->user()->id;
+        $data = $request->all();
+        $data['doctor_id'] = $doctorId;
+        $workingHours = WorkingHours::create($data);
+
+        return response()->json(ResponseHelper::created($workingHours, 'Working hours for doctor added'));
+    }
+    public function updateWorkingHours(Request $request, $id)
+    {
+        if (Auth::user()->role != 3) {
+            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        }
+
+        $doctorId = auth('sanctum')->user()->id;
+        $workingHours = WorkingHours::where('id', $id)
+            ->where('doctor_id', $doctorId)
+            ->first();
+
+        if (!$workingHours) {
+            return response()->json(ResponseHelper::error(null, 'Working hours not found', 'Not found', 404));
+        }
+
+        $workingHours->update($request->all());
+
+        return response()->json(ResponseHelper::success($workingHours, 'Working hours updated successfully'));
+    }
+    public function getWorkingHours()
+    {
+        $doctorId = auth('sanctum')->user()->id;
+        $workingHours = WorkingHours::where('doctor_id', $doctorId)->get();
+
+        return response()->json(ResponseHelper::success($workingHours, 'Doctor working hours retrieved successfully'));
+    }
+    public function deleteWorkingHours($id)
+    {
+        $doctorId = auth('sanctum')->user()->id;
+        $workingHours = WorkingHours::where('id', $id)
+            ->where('doctor_id', $doctorId)
+            ->first();
+
+        if (!$workingHours) {
+            return response()->json(ResponseHelper::error(null, 'Working hours not found', 'Not found', 404));
+        }
+
+        $workingHours->delete();
+
+        return response()->json(ResponseHelper::success(null, 'Working hours deleted successfully'));
     }
     public function addMedicalRecord(Request $request)
     {

@@ -252,13 +252,15 @@ public function ReqAdoption(Request $request)
         $animal = Animal::findOrFail($request->input('animal_id'));
         $existingAdoption = Adoption::where('animal_id', $animal->id)->first();
         if ($existingAdoption) {
-            return response()->json([
+            return response()->json(
+            [
                 'status' => 'error',
                 'message' => 'Adoption already exists for this animal',
             ], 400);
         }
 
-        $adoptionData = [
+        $adoptionData =
+        [
             'adoption_date' => now()->format('Y-m-d H:i:s'),
             'user_id' => Auth::user()->id,
             'animal_id' => $request->input('animal_id'),
