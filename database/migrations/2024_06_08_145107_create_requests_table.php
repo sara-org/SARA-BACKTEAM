@@ -9,15 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('requests', function (Blueprint $table) {
             $table->id();
-            $table->integer('age');
-            $table->string('job_title');
-            $table->time('start_time');
-            $table->time('end_time');
             $table->unsignedBigInteger('user_id');
+            $table->date('date');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users');
         });
@@ -26,12 +23,8 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-        });
-
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('requests');
     }
 };

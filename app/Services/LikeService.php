@@ -13,8 +13,6 @@ use Illuminate\Http\Request;
 
 class LikeService
 {
-
-
     public function likePost(LikeRequest $request)
     {
         $data= $request->validated();
@@ -22,7 +20,4 @@ class LikeService
         $like = Like::create($data);
         return $like;
     }
-
-
-
 }

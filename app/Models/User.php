@@ -8,12 +8,10 @@ use App\Models\Vaccination;
 use App\Models\Doctor;
 use App\Models\UserEmr;
 use App\Models\ResetCodePassword;
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 
@@ -92,6 +90,10 @@ public function vaccinations()
 public function userEmergencies()
     {
         return $this->hasMany(UserEmr::class);
+    }
+    public function requests()
+    {
+        return $this->hasMany(Req::class, 'request_id');
     }
     public function posts()
     {

@@ -13,6 +13,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CenterController;
+use App\Http\Controllers\RequestController;
+
 
 
 
@@ -68,13 +70,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Sponcerships
     Route::post('/user/sponcership/req', [EmployeeController::class, 'reqSponcership']);
     Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
-    Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
-    Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
+   Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
+   Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
     // Adoptions
-    Route::post('/user/adoption/Req', [EmployeeController::class, 'ReqAdoption']);
-    Route::post('/user/adoption/updatereq/{adoption_id}', [EmployeeController::class, 'ApproveAdoption']);
-    Route::get('/user/adoptions/user/{user_id}', [EmployeeController::class, 'getUserAdoptions']);
-    Route::delete('/user/adoption/delete/{adoption_id}', [EmployeeController::class, 'deleteAdoption']);
+   Route::post('/user/adoption/Req', [EmployeeController::class, 'ReqAdoption']);
+   Route::post('/user/adoption/updatereq/{adoption_id}', [EmployeeController::class, 'ApproveAdoption']);
+   Route::get('/user/adoptions/user/{user_id}', [EmployeeController::class, 'getUserAdoptions']);
+   Route::delete('/user/adoption/delete/{adoption_id}', [EmployeeController::class, 'deleteAdoption']);
    // employees
    Route::post('/user/employee/add', [EmployeeController::class, 'addEmployee']);
    Route::post('/user/employee/update/{employee_id}', [EmployeeController::class, 'updateEmployee']);
@@ -95,29 +97,29 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/employee/vaccinations/all', [EmployeeController::class, 'getAllVaccinations']);
    Route::delete('/user/vaccination/delete/{vaccination_id}', [EmployeeController::class, 'deleteVaccination']);
   //doctors
-  Route::post('/user/doctor/add', [DoctorController::class, 'addDoctor']);
-  Route::post('/user/doctor/update/{doctor_id}', [DoctorController::class, 'updateDoctor']);
-  Route::get('/user/doctor/get/{doctor_id}', [DoctorController::class, 'getDoctor']);
-  Route::get('/user/doctors/getall', [DoctorController::class, 'getAllDoctors']);
-  Route::delete('/user/doctor/delete/{doctor_id}', [DoctorController::class, 'deleteDoctor']);
+   Route::post('/user/doctor/add', [DoctorController::class, 'addDoctor']);
+   Route::post('/user/doctor/update/{doctor_id}', [DoctorController::class, 'updateDoctor']);
+   Route::get('/user/doctor/get/{doctor_id}', [DoctorController::class, 'getDoctor']);
+   Route::get('/user/doctors/getall', [DoctorController::class, 'getAllDoctors']);
+   Route::delete('/user/doctor/delete/{doctor_id}', [DoctorController::class, 'deleteDoctor']);
   //medical_records
-  Route::post('/user/doctor/medical-record/add', [DoctorController::class, 'addMedicalRecord']);
-  Route::post('/user/doctor/medical-record/update/{id}', [DoctorController::class, 'updateMedicalRecord']);
-  Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
-  Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
-  Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
+   Route::post('/user/doctor/medical-record/add', [DoctorController::class, 'addMedicalRecord']);
+   Route::post('/user/doctor/medical-record/update/{id}', [DoctorController::class, 'updateMedicalRecord']);
+   Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
+   Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
+   Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
   // emergencies
-  Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
-  Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
-  Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
-  Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
-  Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
+   Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
+   Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
+   Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
+   Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
+   Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
   // User Emergencies
-  Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
-  Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
-  Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
-  Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
-  Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
+   Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
+   Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
+   Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
+   Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
+   Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
    // posts
    Route::post('/user/post/add', [PostController::class, 'addPost']);
    Route::get('/user/posts', [PostController::class, 'getAllPosts']);
@@ -139,6 +141,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/admin/text/update/{centerinfo_id', [CenterController::class, 'updateText']);
    Route::get('/user/admin/text/get/{centerinfo_id', [CenterController::class, 'getText']);
    Route::get('/user/admin/text/delete/{centerinfo_id', [CenterController::class, 'deleteText']);
+
     Route::post('/user/admin/image/add', [CenterController::class, 'addImage']);
     Route::post('/user/admin/image/update/{centerinfo_id', [CenterController::class, 'updateImage']);
     Route::get('/user/admin/image/get/{centerinfo_id', [CenterController::class, 'getImage']);
@@ -148,7 +151,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
     Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
     Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
-
+    //requests
+    Route::post('/user/request/add', [RequestController::class, 'addRequest']);
+    Route::post('/user/request/update/{id}', [RequestController::class, 'updateRequest']);
+    Route::get('/user/request/get/{id}', [RequestController::class, 'getRequest']);
+    Route::get('/user/requests', [RequestController::class, 'getAllRequests']);
+    Route::delete('/user/request/delete/{id}', [RequestController::class, 'deleteRequest']);
+    //empReq
+    Route::post('/user/emprequest/add', [RequestController::class, 'addEmpreq']);
+    Route::post('/user/emprequest/update/{id}', [RequestController::class, 'updateEmpReq']);
+    Route::post('/user/emprequest/updatestatus/{id}', [RequestController::class, 'updateEmpReqStatus']);
+    Route::get('/user/emprequest/get/{id}', [RequestController::class, 'getEmpreq']);
+    Route::get('/user/emprequests', [RequestController::class, 'getAllEmpreqs']);
+    Route::delete('/user/emprequest/delete/{id}', [RequestController::class, 'deleteEmpreq']);
+    // docreq
+    Route::post('/user/docrequest/add', [RequestController::class, 'addDocreq']);
+    Route::post('/user/docrequest/update/{id}', [RequestController::class, 'updateDocReq']);
+    Route::post('/user/docrequest/updatestatus/{id}', [RequestController::class, 'updateDocReqStatus']);
+    Route::get('/user/docrequest/get/{id}', [RequestController::class, 'getDocreq']);
+    Route::get('/user/docrequests', [RequestController::class, 'getAllDocreqs']);
+    Route::delete('/user/docrequest/delete/{id}', [RequestController::class, 'deleteDocreq']);
 });
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
