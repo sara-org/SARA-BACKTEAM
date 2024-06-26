@@ -15,7 +15,6 @@ class PostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|string',
-            'user_id' => 'required|exists:users,id',
         ]);
 
         if ($validator->fails()) {
@@ -24,7 +23,7 @@ class PostController extends Controller
 
         $postData = [
             'text' => $request->input('text'),
-            'user_id' => $request->input('user_id'),
+            'user_id' => auth()->user()->id,
         ];
 
         $post = Post::create($postData);
@@ -69,7 +68,7 @@ class PostController extends Controller
     {
         try {
             $post = Post::with('likes','comments')->findOrFail($id);
-
+           // return $post['is_owner'];
             return ResponseHelper::success($post, 'Post retrieved successfully');
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve post', 500);
