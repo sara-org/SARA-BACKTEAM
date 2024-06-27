@@ -14,6 +14,7 @@ class LikeController extends Controller
 {
     public function likePost(LikeRequest $request)
     {
+        
         $like = app(LikeService::class)->likePost($request);
         return ResponseHelper::created($like, 'Post liked successfully');
     }

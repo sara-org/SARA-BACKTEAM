@@ -130,7 +130,9 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/comment/add', [CommentController::class, 'addComment']);
    Route::post('/user/comment/update/{comment_id}', [CommentController::class, 'updateComment']);
    Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
+   Route::get('/user/postcomments/get/{post_id}', [CommentController::class, 'getPostComments']);
    Route::get('/user/usercomments', [CommentController::class, 'getUserComments']);
+
    Route::get('/user/comments', [CommentController::class, 'getAllComments']);
    Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
    //likes
