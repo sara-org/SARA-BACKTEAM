@@ -5,8 +5,10 @@ use App\Models\Donation;
 use App\Models\Adoption;
 use App\Models\Sponcership;
 use App\Models\Vaccination;
+use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\UserEmr;
+use App\Models\UserSession;
 use App\Models\ResetCodePassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -106,5 +108,13 @@ public function userEmergencies()
     public function likes()
     {
         return $this->hasMany(Like::class);
+    }
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+    public function usersessions()
+    {
+        return $this->hasMany(UserSession::class);
     }
 }

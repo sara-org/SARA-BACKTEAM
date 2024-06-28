@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WorkingHours;
 use App\Models\MedicalRecord;
 use App\Models\Animal;
+use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -287,5 +288,184 @@ public function deleteMedicalRecord($id)
     $medicalRecord->delete();
 
     return response()->json(ResponseHelper::success([], 'Medical record deleted'));
+}
+public function addAppointment(Request $request)
+{
+    if (Auth::user()->role != 2) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $validator = Validator::make($request->all(), [
+        'doctor_id' => ['required', 'integer', Rule::exists('users', 'id')->where(function ($query) {
+            $query->where('role', 3);
+        })],
+        'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+    }
+
+    $doctor = User::find($request->doctor_id);
+
+    if (!$doctor) {
+        return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+    }
+
+    $reserved_time = Carbon::parse($request->reserved_time)->format('H:i');
+
+    $workingHours = WorkingHours::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('start_time', '<=', $reserved_time)
+        ->where('end_time', '>=', $reserved_time)
+        ->first();
+
+    if (!$workingHours) {
+        return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
+    }
+
+    $currentTime = Carbon::parse($request->reserved_time);
+    $halfHourLater = $currentTime->copy()->addMinutes(30);
+
+    $lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('reserved_time', '<', $currentTime->format('H:i'))
+        ->orderBy('reserved_time', 'desc')
+        ->value('reserved_time');
+
+    if ($lastAppointmentEndTime) {
+        $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
+        $minimumAllowedTime = $lastAppointmentEndTime->copy()->addMinutes(30);
+
+        if ($currentTime < $minimumAllowedTime) {
+            return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the next half hour', 422));
+        }
+    }
+
+    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('reserved_time', $request->reserved_time)
+        ->first();
+
+    if ($existingAppointment) {
+        return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));
+    }
+
+    $appointment = Appointment::create([
+        'doctor_id' => $doctor->id,
+        'day' => $request->day,
+        'reserved_time' => $request->reserved_time,
+    ]);
+
+    return response()->json(ResponseHelper::created($appointment, 'Appointment created'));
+}
+
+public function updateAppointment(Request $request, $id)
+{
+    if (Auth::user()->role != 2) {
+        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    }
+
+    $validator = Validator::make($request->all(), [
+        'doctor_id' => ['required', 'integer', Rule::exists('users', 'id')->where(function ($query) {
+            $query->where('role', 3);
+        })],
+        'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+        'reserved_time' => ['required', 'date_format:H:i'],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+    }
+
+    $doctor = User::find($request->doctor_id);
+
+    if (!$doctor) {
+        return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+    }
+
+    $reserved_time = Carbon::parse($request->reserved_time)->format('H:i');
+
+    $workingHours = WorkingHours::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('start_time', '<=', $reserved_time)
+        ->where('end_time', '>=', $reserved_time)
+        ->first();
+
+    if (!$workingHours) {
+        return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
+    }
+
+    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('reserved_time', $request->reserved_time)
+        ->where('id', '!=', $id)
+        ->first();
+
+    if ($existingAppointment) {
+        return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));
+    }
+
+    $appointment = Appointment::find($id);
+
+    if (!$appointment) {
+        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+    }
+
+    $appointment->doctor_id = $doctor->id;
+    $appointment->day = $request->day;
+    $appointment->reserved_time = $request->reserved_time;
+    $appointment->save();
+
+    return response()->json(ResponseHelper::success($appointment, 'Appointment updated'));
+}
+public function getAppointmentsForDay(Request $request)
+{
+    $day = $request->input('day');
+
+    $appointments = Appointment::where('day', $day)->get();
+
+    return response()->json([
+        'appointments' => $appointments,
+    ]);
+}
+public function getAppointmentsForDoctorAndDay(Request $request)
+{
+    $doctorId = $request->input('doctor_id');
+    $day = $request->input('day');
+
+    $appointments = Appointment::where('doctor_id', $doctorId)
+        ->where('day', $day)
+        ->get();
+
+    return response()->json([
+        'appointments' => $appointments,
+    ]);
+}
+public function getAppointmentById($id)
+{
+    $appointment = Appointment::find($id);
+
+    if (!$appointment) {
+        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+    }
+
+    return response()->json([
+        'appointment' => $appointment,
+    ]);
+}
+public function deleteAppointment($id)
+{
+    $appointment = Appointment::find($id);
+
+    if (!$appointment) {
+        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+    }
+
+    $appointment->delete();
+
+    return response()->json([
+        'message' => 'Appointment deleted successfully',
+    ]);
 }
 }

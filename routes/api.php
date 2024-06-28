@@ -132,7 +132,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/comment/get/{comment_id}', [CommentController::class, 'getCommentById']);
    Route::get('/user/postcomments/get/{post_id}', [CommentController::class, 'getPostComments']);
    Route::get('/user/usercomments', [CommentController::class, 'getUserComments']);
-
    Route::get('/user/comments', [CommentController::class, 'getAllComments']);
    Route::delete('/user/comment/delete/{comment_id}', [CommentController::class, 'deleteComment']);
    //likes
@@ -153,6 +152,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
     Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
     Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
+    // appointments
+    Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
+    Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
+    Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
+    Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
+    Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
+    Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
+
     //requests
     Route::post('/user/request/add', [RequestController::class, 'addRequest']);
     Route::post('/user/request/update/{id}', [RequestController::class, 'updateRequest']);
