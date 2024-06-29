@@ -16,6 +16,7 @@ use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
@@ -107,6 +108,29 @@ class DoctorController extends Controller
 
         return response()->json(ResponseHelper::success([], 'Doctor deleted'));
     }
+    // public function addWorkingHours(Request $request)
+    // {
+    //     if (Auth::user()->role != 3) {
+    //         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+    //     }
+
+    //     $validator = Validator::make($request->all(), [
+    //         'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+    //         'start_time' => ['required', 'date_format:H:i'],
+    //         'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+    //     }
+
+    //     $doctorId = auth('sanctum')->user()->id;
+    //     $data = $request->all();
+    //     $data['doctor_id'] = $doctorId;
+    //     $workingHours = WorkingHours::create($data);
+
+    //     return response()->json(ResponseHelper::created($workingHours, 'Working hours for doctor added'));
+    // }
     public function addWorkingHours(Request $request)
     {
         if (Auth::user()->role != 3) {
@@ -126,7 +150,21 @@ class DoctorController extends Controller
         $doctorId = auth('sanctum')->user()->id;
         $data = $request->all();
         $data['doctor_id'] = $doctorId;
-        $workingHours = WorkingHours::create($data);
+        $start = Carbon::parse($data['start_time']);
+        $end = Carbon::parse($data['end_time']);
+        $interval = CarbonInterval::minutes(30);
+        $workingHours = [];
+
+        while ($start < $end) {
+            $workingHours[] = [
+                'doctor_id' => $data['doctor_id'],
+                'day' => $data['day'],
+                'start_time' => $start->format('H:i'),
+                'end_time' => $start->addMinutes(30)->format('H:i'),
+            ];
+        }
+
+        WorkingHours::insert($workingHours);
 
         return response()->json(ResponseHelper::created($workingHours, 'Working hours for doctor added'));
     }
@@ -300,6 +338,7 @@ public function addAppointment(Request $request)
             $query->where('role', 3);
         })],
         'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+        'reserved_time' => ['required', 'date_format:H:i'],
     ]);
 
     if ($validator->fails()) {
@@ -312,40 +351,50 @@ public function addAppointment(Request $request)
         return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
     }
 
-    $reserved_time = Carbon::parse($request->reserved_time)->format('H:i');
+    $reservedTime = Carbon::parse($request->reserved_time);
+    $currentTime = Carbon::parse($request->reserved_time);
+    $halfHourLater = $currentTime->copy()->addMinutes(30);
 
     $workingHours = WorkingHours::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
-        ->where('start_time', '<=', $reserved_time)
-        ->where('end_time', '>=', $reserved_time)
+        ->where('start_time', '<=', $reservedTime->format('H:i'))
+        ->where('end_time', '>=', $reservedTime->format('H:i'))
         ->first();
 
     if (!$workingHours) {
         return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
     }
 
-    $currentTime = Carbon::parse($request->reserved_time);
-    $halfHourLater = $currentTime->copy()->addMinutes(30);
+$lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
+    ->where('day', $request->day)
+    ->where('reserved_time', '<', $currentTime->format('H:i'))
+    ->orderBy('reserved_time', 'desc')
+    ->value('reserved_time');
 
-    $lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
-        ->where('day', $request->day)
-        ->where('reserved_time', '<', $currentTime->format('H:i'))
-        ->orderBy('reserved_time', 'desc')
-        ->value('reserved_time');
+// if ($lastAppointmentEndTime) {
+//     $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
+//     $minimumAllowedTime = $lastAppointmentEndTime->copy()->addMinutes(30);
 
-    if ($lastAppointmentEndTime) {
-        $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
-        $minimumAllowedTime = $lastAppointmentEndTime->copy()->addMinutes(30);
+//     if ($reservedTime < $minimumAllowedTime) {
+//         return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the next half hour', 422));
+//     }
+if ($lastAppointmentEndTime) {
+    $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
 
-        if ($currentTime < $minimumAllowedTime) {
-            return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the next half hour', 422));
-        }
+    if ($reservedTime <= $lastAppointmentEndTime) {
+        return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the same time slot', 422));
     }
-
-    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
+}
+$existingAppointment = Appointment::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('reserved_time', $request->reserved_time)
         ->first();
+
+        $lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
+    ->where('day', $request->day)
+    ->where('reserved_time', '<', $currentTime->format('H:i'))
+    ->orderBy('reserved_time', 'desc')
+    ->value('reserved_time');
 
     if ($existingAppointment) {
         return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));

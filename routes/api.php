@@ -15,12 +15,9 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CenterController;
 use App\Http\Controllers\RequestController;
 
-
-
-
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| Sara API Routes
 |--------------------------------------------------------------------------
 */
 
@@ -64,14 +61,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/animal-types/getType/{id}',[AnimalTypeController::class,'getAnimalsByType']);
 
     // Donations
-    Route::post('/user/donation/add', [UserController::class, 'addDonation']);
-    Route::post('/user/donation/update/{donation_id}', [UserController::class, 'updateDonation']);
-    Route::get('/user/donations/user/{user_id}', [UserController::class, 'getUserDonations']);
-    Route::delete('/user/donation/delete/{donation_id}', [UserController::class, 'deleteDonation']);
+   Route::post('/user/donation/add', [UserController::class, 'addDonation']);
+   Route::post('/user/donation/update/{donation_id}', [UserController::class, 'updateDonation']);
+   Route::get('/user/donations/user/{user_id}', [UserController::class, 'getUserDonations']);
+   Route::delete('/user/donation/delete/{donation_id}', [UserController::class, 'deleteDonation']);
 
     // Sponcerships
-    Route::post('/user/sponcership/req', [EmployeeController::class, 'reqSponcership']);
-    Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
+   Route::post('/user/sponcership/req', [EmployeeController::class, 'reqSponcership']);
+   Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
    Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
    Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
     // Adoptions
