@@ -181,7 +181,11 @@ class UserController extends Controller
             'message' => 'passwords code is valid'
         ], Response::HTTP_OK);
     }
-
+    public function getAllUsers()
+    {
+        $users = User::all();
+        return response()->json(ResponseHelper::success($users, 'All Users Are retrieved'));
+    }
     public function userResetPassword(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [

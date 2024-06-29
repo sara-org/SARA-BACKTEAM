@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Users
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
+    Route::get('/users/all', [UserController::class, 'getAllUsers']);
+
 
     // wallet
     Route::post('/user/wallet/add/{user_id}', [UserController::class, 'addWallet']);
