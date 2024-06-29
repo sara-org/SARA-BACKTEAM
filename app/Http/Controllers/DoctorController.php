@@ -142,7 +142,18 @@ class DoctorController extends Controller
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
         ]);
+        $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
+        ->orWhere('day', $request->input('day'))
+        ->orWhere('start_time', $request->input('start_time'))
+        ->orWhere('end_time', $request->input('end_time'))
+        ->first();
 
+    if ($existingWorkingHours) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Duplicate entry for this doctor hours',
+        ], 400);
+    }
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
@@ -327,6 +338,8 @@ public function deleteMedicalRecord($id)
 
     return response()->json(ResponseHelper::success([], 'Medical record deleted'));
 }
+
+
 public function addAppointment(Request $request)
 {
     if (Auth::user()->role != 2) {
@@ -352,7 +365,7 @@ public function addAppointment(Request $request)
     }
 
     $reservedTime = Carbon::parse($request->reserved_time);
-    $currentTime = Carbon::parse($request->reserved_time);
+    $currentTime = Carbon::now();
     $halfHourLater = $currentTime->copy()->addMinutes(30);
 
     $workingHours = WorkingHours::where('doctor_id', $doctor->id)
@@ -365,50 +378,40 @@ public function addAppointment(Request $request)
         return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
     }
 
-$lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
-    ->where('day', $request->day)
-    ->where('reserved_time', '<', $currentTime->format('H:i'))
-    ->orderBy('reserved_time', 'desc')
-    ->value('reserved_time');
+    $date = Carbon::now()->format('Y-m-d');
 
-// if ($lastAppointmentEndTime) {
-//     $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
-//     $minimumAllowedTime = $lastAppointmentEndTime->copy()->addMinutes(30);
-
-//     if ($reservedTime < $minimumAllowedTime) {
-//         return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the next half hour', 422));
-//     }
-if ($lastAppointmentEndTime) {
-    $lastAppointmentEndTime = Carbon::parse($lastAppointmentEndTime);
-
-    if ($reservedTime <= $lastAppointmentEndTime) {
-        return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the same time slot', 422));
-    }
-}
-$existingAppointment = Appointment::where('doctor_id', $doctor->id)
+    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('reserved_time', $request->reserved_time)
+        ->where('date', '<=', $reservedTime->addDays(7)->format('Y-m-d'))
+        ->where('date', '>=', $date)
         ->first();
-
-        $lastAppointmentEndTime = Appointment::where('doctor_id', $doctor->id)
-    ->where('day', $request->day)
-    ->where('reserved_time', '<', $currentTime->format('H:i'))
-    ->orderBy('reserved_time', 'desc')
-    ->value('reserved_time');
 
     if ($existingAppointment) {
         return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));
+    }
+
+    //Check if there is an appointment in the same time slot within the last 7 days
+    $latestAppointments = Appointment::where('doctor_id', $doctor->id)
+        ->where('day', $request->day)
+        ->where('reserved_time', $request->reserved_time)
+        ->where('date', '>=', $currentTime->subDays(7)->format('Y-m-d'))
+        ->get();
+
+    if ($latestAppointments->isNotEmpty()) {
+        return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the same time slot in the last 7 days', 422));
     }
 
     $appointment = Appointment::create([
         'doctor_id' => $doctor->id,
         'day' => $request->day,
         'reserved_time' => $request->reserved_time,
+        'status' => 1,
+        'date' => $date,
     ]);
 
     return response()->json(ResponseHelper::created($appointment, 'Appointment created'));
 }
-
 public function updateAppointment(Request $request, $id)
 {
     if (Auth::user()->role != 2) {

@@ -18,7 +18,8 @@ class CreateAppointmentsTable extends Migration
             $table->foreignId('doctor_id')->constrained('users')->cascadeOnDelete();
             $table->string('day');
             $table->time('reserved_time');
-            $table->boolean('appointment_status')->default(0);
+            $table->date('date');
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }
