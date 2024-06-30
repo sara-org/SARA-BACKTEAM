@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\User;
+use App\Models\UserSession;
 use Illuminate\Http\Request;
 use App\Helper\ResponseHelper;
 use App\Models\Session;
@@ -104,6 +105,100 @@ public function deleteSession($session_id)
         return ResponseHelper::success([], 'session deleted successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'session not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+
+
+public function addUserSession(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'session_date' => 'required|date',
+            'session_id' => 'required|exists:sessions,id',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $user = auth()->user();
+        $user_id = $user->id;
+
+        $data = [
+            'session_date' => Carbon::parse($request->session_date),
+            'user_id' => $user_id,
+            'session_id' => $request->session_id,
+        ];
+
+        $usersession = UserSession::create($data);
+        return ResponseHelper::created($usersession, 'User session created successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateUserSession(Request $request, $user_session_id)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'session_date' => 'nullable|date',
+            'user_id' => 'nullable|exists:users,id',
+            'session_id' => 'nullable|exists:sessions,id',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $user = auth()->user();
+        $usersession = UserSession::findOrFail($user_session_id);
+
+        if ($user->id === $usersession->user_id) {
+            $usersession->update($request->all());
+            return ResponseHelper::updated($usersession, 'User session updated successfully');
+        } else {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User session not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getUserSessionById($user_session_id)
+{
+    try {
+        $usersession = UserSession::findOrFail($user_session_id);
+        return ResponseHelper::success($usersession, 'User session retrieved successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User session not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getAllUserSessions()
+{
+    try {
+        $userSessions = UserSession::all();
+        return ResponseHelper::success($userSessions, 'All user sessions retrieved successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function deleteUserSession($user_session_id)
+{
+    try {
+        $user = auth()->user();
+        $usersession = UserSession::findOrFail($user_session_id);
+        if ($user->id === $usersession->user_id) {
+            $usersession->delete();
+            return ResponseHelper::success([], 'User session deleted successfully');
+        } else {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User session not found', 404);
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
