@@ -19,6 +19,10 @@ class Department extends Model
     {
         return $this->hasMany(Feeding::class);
     }
- 
+    public function vaccinations()
+    {
+        return $this->hasMany(Vaccination::class);
+    }
+
 }
 

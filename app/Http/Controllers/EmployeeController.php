@@ -23,7 +23,7 @@ class EmployeeController extends Controller
 {
     public function addEmployee(Request $request)
     {
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $validator = Validator::make($request->all(), [
@@ -50,7 +50,7 @@ class EmployeeController extends Controller
 
     public function updateEmployee(Request $request, $employee_id)
     {
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $validator = Validator::make($request->all(), [
@@ -79,7 +79,7 @@ class EmployeeController extends Controller
     public function getAllEmployees()
     {
 
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
@@ -91,7 +91,7 @@ class EmployeeController extends Controller
     public function getEmployee($employee_id)
     {
 
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $employee = Employee::find($employee_id);
@@ -106,7 +106,7 @@ class EmployeeController extends Controller
     public function deleteEmployee($employee_id)
     {
 
-      if (Auth::user()->role != 2) {
+      if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $employee = Employee::find($employee_id);
@@ -364,7 +364,7 @@ public function addFeeding(Request $request)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
         if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
@@ -396,7 +396,7 @@ public function updateFeeding(Request $request, $feedingId)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
         if ($user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
@@ -426,8 +426,8 @@ public function updateFeeding(Request $request, $feedingId)
 public function getUnfedDepartments()
 {
     try {
-        $user = auth()->user();
-        if ($user->role !== 2 && $user->role !== 4) {
+        $user = Auth::user();
+        if ($user->role !== '2' && $user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -441,8 +441,8 @@ public function getUnfedDepartments()
 public function getUserFeedings($user_id)
 {
     try {
-        $loggedInUser = auth()->user();
-        if ($loggedInUser->role !== 2 || $loggedInUser->id != $user_id) {
+        $loggedInUser = Auth::user();
+        if ($loggedInUser->role !== '2' || $loggedInUser->id != $user_id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -462,8 +462,8 @@ public function getUserFeedings($user_id)
 }
 public function getAllFeedings()
 {
-    $user = auth()->user();
-    if ($user->role !== 2) {
+    $user = Auth::user();
+    if ($user->role !== '2') {
         return ResponseHelper::error([], null, 'Unauthorized', 401);
     }
     $feedings = Feeding::all();
@@ -499,9 +499,9 @@ public function addVaccination(Request $request)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
-        if ($user->role !== 4) {
+        if ($user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -543,7 +543,8 @@ public function updateVaccination(Request $request, $vaccinationId)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
+
         if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
@@ -570,8 +571,8 @@ public function updateVaccination(Request $request, $vaccinationId)
 public function getUserVaccinations($user_id)
 {
     try {
-        $loggedInUser = auth()->user();
-        if ($loggedInUser->role !== 2 || $loggedInUser->id != $user_id) {
+        $loggedInUser = Auth::user();
+        if ($loggedInUser->role !== '2' || $loggedInUser->id != $user_id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $user = User::findOrFail($user_id);
@@ -615,14 +616,14 @@ public function deleteVaccination($vaccination_id)
 public function getUnVacDepartments()
 {
     try {
-        $user = auth()->user();
-        if ($user->role !== 2 && $user->role !== 4) {
+        $user = Auth::user();
+        if ($user->role !== '2' && $user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
         $unVacDepartments = Department::whereDoesntHave('vaccinations')->get();
 
-        return ResponseHelper::success($unVacDepartments, 'UnVacc departments retrieved successfully');
+        return ResponseHelper::success($unVacDepartments, 'UnVac departments retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }

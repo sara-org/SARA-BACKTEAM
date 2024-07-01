@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Helper\ResponseHelper;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -23,7 +24,7 @@ class PostController extends Controller
 
         $postData = [
             'text' => $request->input('text'),
-            'user_id' => auth()->user()->id,
+            'user_id' => Auth::user()->id,
         ];
 
         $post = Post::create($postData);

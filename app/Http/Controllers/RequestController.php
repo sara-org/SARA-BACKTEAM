@@ -19,7 +19,7 @@ class RequestController extends Controller
     public function addRequest(Request $request)
     {
         $validator = Validator::make($request->all(), [
-         //   'user_id' => 'required|exists:users,id',
+         //   'user_id' => 'exists:users,id',
         ]);
         if ($validator->fails()) {
             return ResponseHelper::error([], null, 'Validation error', 400);
@@ -139,7 +139,7 @@ class RequestController extends Controller
         }
         $user = Auth::user();
 
-        if ($user->role != 4) {
+        if ($user->role != '4') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         $empreqData = [
@@ -160,7 +160,7 @@ class RequestController extends Controller
     public function updateEmpReqStatus(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role != 2) {
+        if ($user->role != '2') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         $empreq = EmpReq::findOrFail($id);
@@ -196,7 +196,7 @@ class RequestController extends Controller
         $deletedEmpreq = EmpReq::destroy($id);
         $user = Auth::user();
 
-        if ($user->role != 4) {
+        if ($user->role != '4') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         if ($deletedEmpreq) {
@@ -220,7 +220,7 @@ class RequestController extends Controller
         }
         $user = Auth::user();
 
-        if ($user->role != 4) {
+        if ($user->role != '4') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         $docreqData = [
@@ -251,7 +251,7 @@ class RequestController extends Controller
         }
         $user = Auth::user();
 
-        if ($user->role != 4) {
+        if ($user->role != '4') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         $docreqData = [
@@ -283,7 +283,7 @@ class RequestController extends Controller
     public function updateDocReqStatus(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role != 2) {
+        if ($user->role != '2') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         $docreq = DocReq::findOrFail($id);
@@ -306,7 +306,7 @@ class RequestController extends Controller
         $deletedDocreq = DocReq::destroy($id);
         $user = Auth::user();
 
-        if ($user->role != 4) {
+        if ($user->role != '4') {
             return ResponseHelper::error([], 'Unauthorized', 'Unauthorized', 401);
         }
         if ($deletedDocreq) {

@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/animals/getall',[AnimalController::class,'getAllAnimals']);
     Route::get('/animal/get/{animal_id}',[AnimalController::class,'getAnimal']);
     Route::delete('/animal/delete/{animal_id}',[AnimalController::class,'deleteAnimal']);
+    Route::get('/animal-types/getType/{id}',[AnimalTypeController::class,'getAnimalsByType']);
 
     // Animal Types
     Route::post('/animaltype/add',[AnimalTypeController::class,'addAnimalType']);
@@ -57,7 +58,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/department/update/{department_id}',[DepartmentController::class,'updateDepartment']);
     Route::get('/departments/getall',[DepartmentController::class,'getAllDepartments']);
     Route::delete('/department/delete/{department_id}',[DepartmentController::class,'deleteDepartment']);
-    Route::get('/animal-types/getType/{id}',[AnimalTypeController::class,'getAnimalsByType']);
 
     // Donations
    Route::post('/user/donation/add', [UserController::class, 'addDonation']);
@@ -108,13 +108,13 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
    Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
    Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
-  // emergencies
+  //---------// emergencies
    Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
    Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
    Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
    Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
    Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
-  // User Emergencies
+  //---------// User Emergencies
    Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
    Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
    Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
@@ -137,16 +137,16 @@ Route::middleware('auth:sanctum')->group(function () {
    //likes
    Route::post('/user/likes', [LikeController::class, 'likePost']);
    Route::delete('/user/unlikes/{id}', [LikeController::class, 'unlikePost']);
-   // center
+   // center texts
    Route::post('/user/admin/text/add', [CenterController::class, 'addText']);
-   Route::post('/user/admin/text/update/{centerinfo_id', [CenterController::class, 'updateText']);
-   Route::get('/user/admin/text/get/{centerinfo_id', [CenterController::class, 'getText']);
-   Route::get('/user/admin/text/delete/{centerinfo_id', [CenterController::class, 'deleteText']);
-
+   Route::post('/user/admin/text/update/{centerinfo_id}', [CenterController::class, 'updateText']);
+   Route::get('/user/admin/text/get/{centerinfo_id}', [CenterController::class, 'getText']);
+   Route::delete('/user/admin/text/delete/{centerinfo_id}', [CenterController::class, 'deleteText']);
+    // center images
     Route::post('/user/admin/image/add', [CenterController::class, 'addImage']);
-    Route::post('/user/admin/image/update/{centerinfo_id', [CenterController::class, 'updateImage']);
-    Route::get('/user/admin/image/get/{centerinfo_id', [CenterController::class, 'getImage']);
-    Route::get('/user/admin/image/delete/{centerinfo_id', [CenterController::class, 'deleteImage']);
+    Route::post('/user/admin/image/update/{centerinfo_id}', [CenterController::class, 'updateImage']);
+    Route::get('/user/admin/image/get/{centerinfo_id}', [CenterController::class, 'getImage']);
+    Route::delete('/user/admin/image/delete/{centerinfo_id}', [CenterController::class, 'deleteImage']);
     //working times
     Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
     Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
@@ -154,6 +154,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
+    //----------//
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
     Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
@@ -169,11 +170,12 @@ Route::middleware('auth:sanctum')->group(function () {
     //empReq
     Route::post('/user/emprequest/add', [RequestController::class, 'addEmpreq']);
     Route::post('/user/emprequest/update/{id}', [RequestController::class, 'updateEmpReq']);
+   //--------//
     Route::post('/user/emprequest/updatestatus/{id}', [RequestController::class, 'updateEmpReqStatus']);
     Route::get('/user/emprequest/get/{id}', [RequestController::class, 'getEmpreq']);
     Route::get('/user/emprequests', [RequestController::class, 'getAllEmpreqs']);
     Route::delete('/user/emprequest/delete/{id}', [RequestController::class, 'deleteEmpreq']);
-    // docreq
+    //-------// docreq
     Route::post('/user/docrequest/add', [RequestController::class, 'addDocreq']);
     Route::post('/user/docrequest/update/{id}', [RequestController::class, 'updateDocReq']);
     Route::post('/user/docrequest/updatestatus/{id}', [RequestController::class, 'updateDocReqStatus']);

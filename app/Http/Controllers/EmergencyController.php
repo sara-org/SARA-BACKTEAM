@@ -8,6 +8,7 @@ use App\Models\Emergency;
 use App\Models\UserEmr;
 use App\Helper\ResponseHelper;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -23,21 +24,21 @@ class EmergencyController extends Controller
                 'contact' => 'required|string',
                 'photo' => 'nullable|string',
             ]);
-    
+
             if ($validator->fails()) {
                 throw ValidationException::withMessages($validator->errors()->toArray());
             }
-    
+
             $emergencyData = [
                 'address' => $request->input('address'),
                 'description' => $request->input('description'),
                 'contact' => $request->input('contact'),
                 'photo' => $request->input('photo'),
             ];
-    
-            
+
+
             $emergency = Emergency::create($emergencyData);
-    
+
             return ResponseHelper::created($emergency, 'Emergency added successfully');
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
@@ -116,14 +117,14 @@ public function addUserEmergency(Request $request)
         $validator = Validator::make($request->all(), [
             'status' => 'required|string',
             'date' => 'required|date',
-            'user_id' => 'required|exists:users,id',
+           // 'user_id' => 'required|exists:users,id',
             'emergency_id' => 'required|exists:emergencies,id',
         ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user->id === $request->user_id) {
             $userEmergency = UserEmr::create($request->all());
@@ -149,7 +150,7 @@ public function updateUserEmergency(Request $request, $user_emergency_id)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
         $userEmergency = UserEmr::findOrFail($user_emergency_id);
         if ($user->role === '4' ) {
             $userEmergency->update($request->all());
@@ -186,7 +187,7 @@ public function getAllUserEmergencies()
 public function deleteUserEmergency($user_emergency_id)
 {
     try {
-        $user = auth()->user();
+        $user = Auth::user();
         $userEmergency = UserEmr::findOrFail($user_emergency_id);
         if ($user->id === $userEmergency->user_id) {
             $userEmergency->delete();

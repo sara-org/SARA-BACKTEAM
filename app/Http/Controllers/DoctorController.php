@@ -30,7 +30,7 @@ class DoctorController extends Controller
 {
     public function addDoctor(Request $request)
     {
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $validator = Validator::make($request->all(), [
@@ -51,7 +51,7 @@ class DoctorController extends Controller
 
     public function updateDoctor(Request $request, $doctor_id)
     {
-        if (Auth::user()->role != 2) {
+        if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $validator = Validator::make($request->all(), [
@@ -95,7 +95,7 @@ class DoctorController extends Controller
     public function deleteDoctor($doctor_id)
     {
 
-      if (Auth::user()->role != 2) {
+      if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
         $doctor = Doctor::find($doctor_id);
@@ -108,32 +108,9 @@ class DoctorController extends Controller
 
         return response()->json(ResponseHelper::success([], 'Doctor deleted'));
     }
-    // public function addWorkingHours(Request $request)
-    // {
-    //     if (Auth::user()->role != 3) {
-    //         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
-    //     }
-
-    //     $validator = Validator::make($request->all(), [
-    //         'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
-    //         'start_time' => ['required', 'date_format:H:i'],
-    //         'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
-    //     }
-
-    //     $doctorId = auth('sanctum')->user()->id;
-    //     $data = $request->all();
-    //     $data['doctor_id'] = $doctorId;
-    //     $workingHours = WorkingHours::create($data);
-
-    //     return response()->json(ResponseHelper::created($workingHours, 'Working hours for doctor added'));
-    // }
     public function addWorkingHours(Request $request)
     {
-        if (Auth::user()->role != 3) {
+        if (Auth::user()->role != '3') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
@@ -181,7 +158,7 @@ class DoctorController extends Controller
     }
     public function updateWorkingHours(Request $request, $id)
     {
-        if (Auth::user()->role != 3) {
+        if (Auth::user()->role != '3') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
@@ -232,7 +209,7 @@ class DoctorController extends Controller
     }
     public function addMedicalRecord(Request $request)
     {
-        if (Auth::user()->role != 3) {
+        if (Auth::user()->role != '3') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
@@ -257,7 +234,7 @@ class DoctorController extends Controller
     }
     public function updateMedicalRecord(Request $request, $id)
 {
-    if (Auth::user()->role != 3) {
+    if (Auth::user()->role != '3') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 
@@ -293,7 +270,7 @@ class DoctorController extends Controller
 
 public function getAllMedicalRecords()
 {
-    if (Auth::user()->role != 3) {
+    if (Auth::user()->role != '3') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 
@@ -306,7 +283,7 @@ public function getAllMedicalRecords()
 
 public function getMedicalRecord($id)
 {
-    if (Auth::user()->role != 3) {
+    if (Auth::user()->role != '3') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 
@@ -322,7 +299,7 @@ public function getMedicalRecord($id)
 }
 public function deleteMedicalRecord($id)
 {
-    if (Auth::user()->role != 3) {
+    if (Auth::user()->role != '3') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 
@@ -342,7 +319,7 @@ public function deleteMedicalRecord($id)
 
 public function addAppointment(Request $request)
 {
-    if (Auth::user()->role != 2) {
+    if (Auth::user()->role != '2') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 
@@ -414,7 +391,7 @@ public function addAppointment(Request $request)
 }
 public function updateAppointment(Request $request, $id)
 {
-    if (Auth::user()->role != 2) {
+    if (Auth::user()->role != '2') {
         return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
     }
 

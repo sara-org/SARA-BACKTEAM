@@ -355,18 +355,31 @@ public function getWallet($user_id)
     }
 }
 
-    public function getAllWallets()
-    {
-        $users = User::all();
-        $wallets = $users->pluck('wallet')->toArray();
-
-        return ResponseHelper::success('All wallets retrieved successfully', ['wallets' => $wallets]);
+public function getAllWallets()
+{
+    $user = Auth::user();
+    if ($user->role !== '2'){
+        return ResponseHelper::error([], null, 'Unauthorized', 401);
     }
+    $users = User::all();
+    $walletData = [];
+
+    foreach ($users as $user) {
+        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+            $walletData[] = [
+                'user_id' => $user->id,
+                'wallet' => $user->wallet,
+            ];
+        }
+    }
+
+    return ResponseHelper::success(['wallets' => $walletData] , 200, 'All wallets retrieved successfully');
+}
 
     public function removeWallet($user_id)
     {
         $user = User::findOrFail($user_id);
-        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+        if ($user->id !== Auth::user()->id && $user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $user->wallet = 0;
@@ -389,7 +402,7 @@ public function addDonation(Request $request)
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
-        $loggedUser = auth()->user();
+        $loggedUser = Auth::user();
 
         $donationData = $request->only('balance');
         $donationData['donation_date'] = now()->format('Y-m-d H:i:s');
@@ -416,7 +429,7 @@ public function updateDonation(Request $request, $donation_id)
 
         $donation = Donation::findOrFail($donation_id);
         $userData = $request->all();
-        if ($donation->user_id !== auth()->user()->id) {
+        if ($donation->user_id !== Auth::user()->id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $donationData = [
@@ -450,7 +463,7 @@ public function deleteDonation($donation_id)
     try {
         $donation = Donation::findOrFail($donation_id);
 
-        if ($donation->user_id !== auth()->user()->id) {
+        if ($donation->user_id !== Auth::user()->id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
