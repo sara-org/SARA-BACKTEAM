@@ -127,10 +127,10 @@ class EmployeeController extends Controller
                 'balance' => 'required|numeric',
             ]);
 
-            if ($validator->fails())
-            {
+            if ($validator->fails()) {
                 throw new ValidationException($validator);
             }
+
             $user = Auth::user();
             $animal = Animal::findOrFail($request->input('animal_id'));
             $wallet = $user->wallet;
@@ -142,25 +142,25 @@ class EmployeeController extends Controller
                     'message' => 'Animal is already adopted',
                 ], 400);
             }
-            $lastSponcership = Sponcership::where('animal_id', $animal->id)->latest()->first();
-            if ($lastSponcership)
-            {
-                $lastSponcershipDate = Carbon::parse($lastSponcership->sponcership_date);
-                $currentDate = Carbon::now();
-                if ($currentDate->diffInMonths($lastSponcershipDate) < 1) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Cannot add new sponsorship within a month',
-                    ], 400);
-                }
-            }
-            if ($wallet < $request->input('balance'))
-            {
+
+            $lastSponcership = Sponcership::where('animal_id', $animal->id)
+            ->where('spon_status', 1)
+            ->latest()
+            ->first();
+
+        if ($lastSponcership && $lastSponcership->user_id == $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cannot request sponsorship again within a month',
+            ], 400);
+        }
+            if ($wallet < $request->input('balance')) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Insufficient balance',
                 ], 400);
             }
+
             $sponcershipData = [
                 'sponcership_date' => Carbon::now(),
                 'user_id' => $user->id,
@@ -168,8 +168,14 @@ class EmployeeController extends Controller
                 'spon_status' => 0,
                 'balance' => $request->input('balance'),
             ];
+
             $sponcership = Sponcership::create($sponcershipData);
-            $user->save();
+
+            if (!$lastSponcership || $lastSponcership->user_id != $user->id) {
+                $user->wallet -= $request->input('balance');
+                $user->save();
+            }
+
             return ResponseHelper::created($sponcership, 'Sponcership requested successfully');
         } catch (ModelNotFoundException $exception) {
             return ResponseHelper::error([], null, 'User or animal not found', 404);
@@ -250,24 +256,31 @@ public function ReqAdoption(Request $request)
         }
 
         $animal = Animal::findOrFail($request->input('animal_id'));
-        $existingAdoption = Adoption::where('animal_id', $animal->id)->first();
+        $userId = Auth::user()->id;
+
+        $existingAdoption = Adoption::where('animal_id', $animal->id)
+            ->where('user_id', $userId)
+            ->where('adop_status', 1)
+            ->latest()
+            ->first();
+
+
         if ($existingAdoption) {
             return response()->json(
-            [
-                'status' => 'error',
-                'message' => 'Adoption already exists for this animal',
-            ], 400);
+                [
+                    'status' => 'error',
+                    'message' => 'Adoption already exists for this animal',
+                ],
+                400
+            );
         }
 
-        $adoptionData =
-        [
+        $adoption = Adoption::create([
             'adoption_date' => now()->format('Y-m-d H:i:s'),
-            'user_id' => Auth::user()->id,
+            'user_id' => $userId,
             'animal_id' => $request->input('animal_id'),
             'adop_status' => 0,
-        ];
-
-        $adoption = Adoption::create($adoptionData);
+        ]);
 
         return ResponseHelper::created($adoption, 'Adoption requested successfully');
     } catch (ModelNotFoundException $exception) {
@@ -276,7 +289,6 @@ public function ReqAdoption(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function ApproveAdoption(Request $request, $adoptionId)
 {
     try {
@@ -337,7 +349,6 @@ public function addFeeding(Request $request)
     try {
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
         ]);
         $existingFeeding = Feeding::where('department_id', $request->input('department_id'))
         ->orWhere('feeding_date', $request->input('feeding_date'))
@@ -353,15 +364,14 @@ public function addFeeding(Request $request)
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = $request->user();
-
+        $user = auth()->user();
         if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
         $feedingData = [
             'department_id' => $request->input('department_id'),
-            'user_id' => $request->input('user_id'),
+           'user_id' => Auth::user()->id,
             'feeding_date' => carbon::now()->format('Y-m-d H-i-s'),
         ];
 
@@ -380,37 +390,35 @@ public function updateFeeding(Request $request, $feedingId)
     try {
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
         ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
-        $user = $request->user();
-        if ($user->role !== '4') {
+
+        $user = auth()->user();
+        if ($user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
-        $feeding = Feeding::find($feedingId);
+        $feeding = Feeding::where('id', $feedingId)
+            ->where('user_id', $user->id)
+            ->first();
 
         if (!$feeding) {
             return ResponseHelper::error([], null, 'Feeding not found', 404);
         }
 
         $feeding->department_id = $request->input('department_id');
-        $feeding->user_id = $request->input('user_id');
         $feeding->feeding_date = Carbon::now()->format('Y-m-d H:i:s');
         $feeding->save();
 
         return ResponseHelper::success($feeding, 'Feeding updated successfully');
     }
-    catch
-     (ValidationException $exception) {
+    catch (ValidationException $exception) {
         return ResponseHelper::error([], null, $exception->getMessage(), 400);
     }
-
-    catch (\Throwable $th)
-    {
+    catch (\Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
@@ -418,6 +426,11 @@ public function updateFeeding(Request $request, $feedingId)
 public function getUnfedDepartments()
 {
     try {
+        $user = auth()->user();
+        if ($user->role !== 2 && $user->role !== 4) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
         $unfedDepartments = Department::whereDoesntHave('feedings')->get();
 
         return ResponseHelper::success($unfedDepartments, 'Unfed departments retrieved successfully');
@@ -428,7 +441,10 @@ public function getUnfedDepartments()
 public function getUserFeedings($user_id)
 {
     try {
-
+        $loggedInUser = auth()->user();
+        if ($loggedInUser->role !== 2 || $loggedInUser->id != $user_id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
 
         $user = User::findOrFail($user_id);
         $feedingDepartments = $user->feedings()->with('department')->get();
@@ -444,9 +460,12 @@ public function getUserFeedings($user_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-//ADD API FOR DEPARS WHICH NOT FEEDED
 public function getAllFeedings()
 {
+    $user = auth()->user();
+    if ($user->role !== 2) {
+        return ResponseHelper::error([], null, 'Unauthorized', 401);
+    }
     $feedings = Feeding::all();
 
     return ResponseHelper::success($feedings, 'Feedings retrieved successfully');
@@ -456,8 +475,7 @@ public function deleteFeeding($feeding_id)
     try {
         $feeding = Feeding::findOrFail($feeding_id);
 
-
-        if (Auth::user()->role !== '4') {
+        if (Auth::user()->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -475,34 +493,34 @@ public function addVaccination(Request $request)
     try {
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
-            'vaccination_date' => 'required|date_format:H:i:s',
         ]);
-        $existingVaccination = Vaccination::where('department_id', $request->input('department_id'))
-        ->where('vaccination_date', $request->input('vaccination_date'))
-        ->first();
 
-    if ($existingVaccination) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Duplicate vaccination for this department and date',
-        ], 400);
-    }
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
-        $user = $request->user();
+        $user = auth()->user();
 
-        if ($user->role !== '4') {
+        if ($user->role !== 4) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
         $vaccinationData = [
             'department_id' => $request->input('department_id'),
-            'user_id' => $request->input('user_id'),
-            'vaccination_date' => $request->input('vaccination_date'),
+            'user_id' => $user->id,
+            'vaccination_date' => Carbon::now()->format('Y-m-d H:i:s'),
         ];
+
+        $existingVaccination = Vaccination::where('department_id', $vaccinationData['department_id'])
+            ->whereDate('vaccination_date', Carbon::parse($vaccinationData['vaccination_date'])->toDateString())
+            ->first();
+
+        if ($existingVaccination) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Duplicate vaccination for this department and date',
+            ], 400);
+        }
 
         $vaccination = Vaccination::create($vaccinationData);
 
@@ -513,32 +531,33 @@ public function addVaccination(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+
 public function updateVaccination(Request $request, $vaccinationId)
 {
     try {
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 4)],
-            'vaccination_date' => 'required|date_format:H:i:s',
         ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
-        $user = $request->user();
+
+        $user = auth()->user();
         if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
-        $vaccination = Vaccination::find($vaccinationId);
+        $vaccination = Vaccination::where('id', $vaccinationId)
+            ->where('user_id', $user->id)
+            ->first();
 
         if (!$vaccination) {
             return ResponseHelper::error([], null, 'Vaccination not found', 404);
         }
 
         $vaccination->department_id = $request->input('department_id');
-        $vaccination->user_id = $request->input('user_id');
-        $vaccination->vaccination_date = $request->input('vaccination_date');
+        $vaccination->vaccination_date = Carbon::parse($request->input('vaccination_date'));
         $vaccination->save();
 
         return ResponseHelper::success($vaccination, 'Vaccination updated successfully');
@@ -548,10 +567,13 @@ public function updateVaccination(Request $request, $vaccinationId)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getUserVaccinations($user_id)
 {
     try {
+        $loggedInUser = auth()->user();
+        if ($loggedInUser->role !== 2 || $loggedInUser->id != $user_id) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $user = User::findOrFail($user_id);
         $vaccinationDepartments = $user->vaccinations()->with('department')->get();
 

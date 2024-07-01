@@ -40,13 +40,13 @@ class Animal extends Model
     }
     public function adoptions()
     {
-        return $this->hasMany(Adoption::class)->where('adop_status','1');
+        return $this->hasMany(Adoption::class)->whereIn('adop_status', ['0', '1']);
     }
-    public function sponcerships()
-{
-    return $this->hasMany(Sponcership::class)->where('spon_status','1');
-}
 
+    public function sponcerships()
+    {
+        return $this->hasMany(Sponcership::class)->whereIn('spon_status', ['0', '1']);
+    }
 public function medicalRecords()
 {
     return $this->hasMany(MedicalRecord::class);

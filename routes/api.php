@@ -34,11 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // wallet
-    Route::post('/user/wallet/add/{user_id}', [UserController::class, 'addWallet']);
-    Route::post('/user/wallet/update/{user_id}', [UserController::class, 'updateWallet']);
+    Route::post('/user/wallet/charge/{user_id}', [UserController::class, 'chargeWallet']);
     Route::get('/user/wallet/get/{user_id}', [UserController::class, 'getWallet']);
     Route::get('/user/wallets', [UserController::class, 'getAllWallets']);
-    Route::delete('/user/wallet/delete/{user_id}', [UserController::class, 'removeWallet']);
+    Route::delete('/user/wallet/remove/{user_id}', [UserController::class, 'removeWallet']);
 
      // Animals
     Route::post('/animal/add',[AnimalController::class,'addAnimal']);

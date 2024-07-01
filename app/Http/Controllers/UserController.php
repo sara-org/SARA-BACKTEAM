@@ -319,28 +319,42 @@ class UserController extends Controller
     }
 }
 
-public function addWallet(Request $request, $user_id)
+public function chargeWallet(Request $request, $user_id)
 {
-    $user = User::findOrFail($user_id);
-    $user->wallet = $request->input('wallet');
-    $user->save();
-
-    return ResponseHelper::success('Wallet added successfully');
-}
-public function updateWallet(Request $request, $user_id)
-{
-    $user = User::findOrFail($user_id);
-    $user->wallet = $request->input('wallet');
-    $user->save();
-    return ResponseHelper::success('Wallet updated successfully');
-}
-     public function getWallet($user_id)
-    {
+    try {
         $user = User::findOrFail($user_id);
+        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $oldWallet = $user->wallet;
+        $newWallet = $oldWallet + $request->input('wallet');
+        $user->wallet = $newWallet;
+        $user->save();
+
+        return ResponseHelper::success('Wallet charged successfully', ['wallet' => $newWallet]);
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getWallet($user_id)
+{
+    try {
+        $user = User::findOrFail($user_id);
+        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $wallet = $user->wallet;
 
-        return ResponseHelper::success('Wallet retrieved successfully', ['wallet' => $wallet]);
+        return ResponseHelper::success( ['wallet' => $wallet] , 200, 'Wallet retrieved successfully');
+    } catch (ModelNotFoundException $exception) {
+        return ResponseHelper::error([], null, 'User not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
+}
+
     public function getAllWallets()
     {
         $users = User::all();
@@ -352,6 +366,9 @@ public function updateWallet(Request $request, $user_id)
     public function removeWallet($user_id)
     {
         $user = User::findOrFail($user_id);
+        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $user->wallet = 0;
         $user->save();
 
