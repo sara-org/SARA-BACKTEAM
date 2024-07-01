@@ -68,7 +68,7 @@ class PostController extends Controller
     {
         try {
             $post = Post::with('likes','comments')->findOrFail($id);
-           // return $post['is_owner'];
+            $post['is_owner'] = $post['is_owner'];
             return ResponseHelper::success($post, 'Post retrieved successfully');
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve post', 500);

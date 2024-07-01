@@ -27,7 +27,8 @@ class Post extends Model
         return $this->hasMany(Like::class);
     }
 
-    public function isOwner(){
+    protected function isOwner(): Attribute
+    {
         return Attribute::make(
             get: function () {
                 return (bool) (auth()->user()->id == $this['user_id']);

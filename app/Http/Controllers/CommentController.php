@@ -73,6 +73,7 @@ class CommentController extends Controller
     {
 
             $comment = Comment::findOrFail($id);
+            $comment['is_owner'] = $comment['is_owner'];
             return ResponseHelper::success($comment, null,'Comment retrieved successfully',200);
 
     }
