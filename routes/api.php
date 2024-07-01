@@ -94,7 +94,9 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/employee/vaccination/{user_id}', [EmployeeController::class, 'getUserVaccinations']);
    Route::get('/user/employee/vaccinations/all', [EmployeeController::class, 'getAllVaccinations']);
    Route::delete('/user/vaccination/delete/{vaccination_id}', [EmployeeController::class, 'deleteVaccination']);
-  //doctors
+   Route::get('/user/unVac-departments', [EmployeeController::class, 'getUnVacDepartments']);
+
+   //doctors
    Route::post('/user/doctor/add', [DoctorController::class, 'addDoctor']);
    Route::post('/user/doctor/update/{doctor_id}', [DoctorController::class, 'updateDoctor']);
    Route::get('/user/doctor/get/{doctor_id}', [DoctorController::class, 'getDoctor']);

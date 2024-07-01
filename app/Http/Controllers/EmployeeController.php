@@ -612,4 +612,19 @@ public function deleteVaccination($vaccination_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+public function getUnVacDepartments()
+{
+    try {
+        $user = auth()->user();
+        if ($user->role !== 2 && $user->role !== 4) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $unVacDepartments = Department::whereDoesntHave('vaccinations')->get();
+
+        return ResponseHelper::success($unVacDepartments, 'UnVacc departments retrieved successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
 }
