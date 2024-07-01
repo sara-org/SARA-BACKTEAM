@@ -144,13 +144,13 @@ class AnimalController extends Controller
                 'message' => 'Animal not found',
             ], 404);
         }
-        $animal=$animal->toArray();
-        if(! count($animal['adoptions'])){
-            $animal['adoptions']=null;
-        }
-        if(! count($animal['sponcerships'])){
-            $animal['sponcerships']=null;
-        }
+        // $animal=$animal->toArray();
+        // if(! count($animal['adoptions'])){
+        //     $animal['adoptions']=null;
+        // }
+        // if(! count($animal['sponcerships'])){
+        //     $animal['sponcerships']=null;
+        // }
         return response()->json([
             'status' => true,
             'message' => 'Animal retrieved successfully',

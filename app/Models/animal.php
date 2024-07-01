@@ -40,7 +40,7 @@ class Animal extends Model
     }
     public function adoptions()
     {
-        return $this->hasMany(Adoption::class)->whereIn('adop_status', ['0', '1']);
+        return $this->hasMany(Adoption::class)->where('adop_status',  '1');
     }
 
     public function sponcerships()
