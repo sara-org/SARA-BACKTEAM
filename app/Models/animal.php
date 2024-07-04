@@ -45,7 +45,8 @@ class Animal extends Model
 
     public function sponcerships()
     {
-        return $this->hasMany(Sponcership::class)->whereIn('spon_status', ['0', '1']);
+        return $this->hasMany(Sponcership::class)->where('spon_status',  '1');
+
     }
 public function medicalRecords()
 {

@@ -205,7 +205,7 @@ public function getUserSponcerships($user_id)
         if ($loggedInUser->role !== '2' && $loggedInUser->id !== $user_id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        $sponcerships = Sponcership::where('user_id', $user_id)->get();
+        $sponcerships = Sponcership::where('user_id', $user_id)->with('animal:id,name')->get();
         return ResponseHelper::success($sponcerships, 'User sponcerships retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);
@@ -222,7 +222,6 @@ public function deleteSponcership($sponcership_id)
         if (Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
         $sponcership->delete();
 
         return ResponseHelper::success([], 'Sponcership deleted successfully');
