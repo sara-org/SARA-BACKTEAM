@@ -387,77 +387,100 @@ public function getAllWallets()
 
         return ResponseHelper::success('Wallet deleted successfully');
     }
-public function addDonation(Request $request)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'balance' => 'required|numeric',
-        ]);
+    public function addDonation(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'balance' => 'required|numeric',
+            ]);
 
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
+            if ($validator->fails()) {
+                throw ValidationException::withMessages($validator->errors()->toArray());
+            }
+
+            if (!auth()->check()) {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);}
+
+            $loggedUser = Auth::user();
+            if ($loggedUser->wallet < $request->input('balance')) {
+                return ResponseHelper::error([], null, 'Insufficient balance', 400);}
+            $donationData = $request->only('balance');
+            $donationData['donation_date'] = now()->format('Y-m-d H:i:s');
+            $donationData['user_id'] = $loggedUser->id;
+
+            $donation = Donation::create($donationData);
+            $loggedUser->wallet -= $request->input('balance');
+            $loggedUser->save();
+
+            return ResponseHelper::created($donation, 'Donation added successfully');
+        } catch (Throwable $th) {
+            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-
-        if (!auth()->check()) {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
-
-        $loggedUser = Auth::user();
-
-        $donationData = $request->only('balance');
-        $donationData['donation_date'] = now()->format('Y-m-d H:i:s');
-        $donationData['user_id'] = $loggedUser->id;
-
-        $donation = Donation::create($donationData);
-
-        return ResponseHelper::created($donation, 'Donation added successfully');
-    } catch (Throwable $th) {
-        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
-}
-public function updateDonation(Request $request, $donation_id)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'balance' => 'required|numeric',
 
-        ]);
 
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
+    public function updateDonation(Request $request, $donation_id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'balance' => 'required|numeric',
+            ]);
+
+            if ($validator->fails()) {
+                throw ValidationException::withMessages($validator->errors()->toArray());
+            }
+
+            $donation = Donation::findOrFail($donation_id);
+            $userData = $request->all();
+
+            if ($donation->user_id !== Auth::user()->id) {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
+
+
+            $loggedUser = Auth::user();
+            if ($loggedUser->wallet < $userData['balance']) {
+                return ResponseHelper::error([], null, 'Insufficient balance', 400);
+            }
+
+            $donationData = [
+                'balance' => $userData['balance'],
+            ];
+
+            $donation->update($donationData);
+
+
+            $loggedUser->wallet += $donation->balance;
+            $loggedUser->wallet -= $userData['balance'];
+            $loggedUser->save();
+
+            return ResponseHelper::updated($donation, 'Donation updated successfully');
+        } catch (ModelNotFoundException $exception) {
+            return ResponseHelper::error([], null, 'Donation not found', 404);
+        } catch (Throwable $th) {
+            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
+    }
 
-        $donation = Donation::findOrFail($donation_id);
-        $userData = $request->all();
-        if ($donation->user_id !== Auth::user()->id) {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
+    public function getUserDonations($user_id)
+    {
+        try {
+            $loggedInUser = Auth::user();
+
+            if ($loggedInUser->id != $user_id && $loggedInUser->role != 2) {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
+
+            $user = User::findOrFail($user_id);
+            $donations = $user->donations;
+
+            return ResponseHelper::success($donations, 'User donations retrieved successfully');
+        } catch (ModelNotFoundException $exception) {
+            return ResponseHelper::error([], null, 'User not found', 404);
+        } catch (Throwable $th) {
+            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-        $donationData = [
-            'balance' => $userData['balance'],
-        ];
-
-        $donation->update($donationData);
-
-        return ResponseHelper::updated($donation, 'Donation updated successfully');
-    } catch (ModelNotFoundException $exception) {
-        return ResponseHelper::error([], null, 'Donation not found', 404);
-    } catch (Throwable $th) {
-        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
-}
-public function getUserDonations($user_id)
-{
-    try {
-        $user = User::findOrFail($user_id);
-        $donations = $user->donations;
-
-        return ResponseHelper::success($donations, 'User donations retrieved successfully');
-    } catch (ModelNotFoundException $exception) {
-        return ResponseHelper::error([], null, 'User not found', 404);
-    } catch (Throwable $th) {
-        return ResponseHelper::error([], null, $th->getMessage(), 500);
-    }
-}
 public function deleteDonation($donation_id)
 {
     try {
