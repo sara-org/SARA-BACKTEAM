@@ -323,7 +323,7 @@ public function chargeWallet(Request $request, $user_id)
 {
     try {
         $user = User::findOrFail($user_id);
-        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+        if ($user->id !== Auth::user()->id && $user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $oldWallet = $user->wallet;
