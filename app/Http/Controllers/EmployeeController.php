@@ -94,7 +94,7 @@ class EmployeeController extends Controller
         if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
-        $employee = Employee::find($employee_id);
+        $employee = Employee::with('user')->find($employee_id);
 
         if (!$employee) {
             return response()->json(ResponseHelper::error([], null, 'Employee not found', 404));

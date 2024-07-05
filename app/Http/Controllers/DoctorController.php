@@ -75,7 +75,6 @@ class DoctorController extends Controller
     }
     public function getAllDoctors()
     {
-
         $doctors = Doctor::all();
 
         return response()->json(ResponseHelper::success($doctors, 'All Doctors Are retrieved'));
@@ -83,7 +82,7 @@ class DoctorController extends Controller
 
     public function getDoctor($doctor_id)
     {
-        $doctor = Doctor::find($doctor_id);
+        $doctor = Doctor::with('user')->find($doctor_id);
 
         if (!$doctor) {
             return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
@@ -91,14 +90,13 @@ class DoctorController extends Controller
 
         return response()->json(ResponseHelper::success($doctor, 'Doctor retrieved'));
     }
-
     public function deleteDoctor($doctor_id)
     {
 
       if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
-        $doctor = Doctor::find($doctor_id);
+        $doctor = Doctor::with('user')->find($doctor_id);
 
         if (!$doctor) {
             return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
@@ -187,7 +185,13 @@ class DoctorController extends Controller
     }
     public function getWorkingHours()
     {
-        $doctorId = auth('sanctum')->user()->id;
+        $user = auth('sanctum')->user();
+
+        if ($user->role !== '2' && $user->role !== '3') {
+            return response()->json(ResponseHelper::error('Unauthorized', 401));
+        }
+
+        $doctorId = $user->id;
         $workingHours = WorkingHours::where('doctor_id', $doctorId)->get();
 
         return response()->json(ResponseHelper::success($workingHours, 'Doctor working hours retrieved successfully'));
