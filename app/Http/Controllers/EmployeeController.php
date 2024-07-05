@@ -195,7 +195,20 @@ public function ApproveSponcership(Request $request, $sponcershipId)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+public function getPendingSponcerships()
+{
+    try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
 
+        $sponcerships = Sponcership::where('spon_status', 0)->get();
+
+        return ResponseHelper::success($sponcerships, 'Pending sponcerships retrieved successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
 
 public function getUserSponcerships($user_id)
 {
@@ -294,6 +307,20 @@ public function ApproveAdoption(Request $request, $adoptionId)
         return ResponseHelper::success($adoption, 'Adoption approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Adoption not found', 404);
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getPendingAdoptions()
+{
+    try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $adoptions = Adoption::where('adop_status', 0)->get();
+
+        return ResponseHelper::success($adoptions, 'Pending adoptions retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }

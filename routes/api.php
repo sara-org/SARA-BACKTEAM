@@ -70,11 +70,15 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
    Route::get('/user/sponcerships/user/{user_id}', [EmployeeController::class, 'getUserSponcerships']);
    Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
-    // Adoptions
+   Route::get('/user/sponcerships/pendingsponcership/getall', [EmployeeController::class, 'getPendingSponcerships']);
+
+   // Adoptions
    Route::post('/user/adoption/Req', [EmployeeController::class, 'ReqAdoption']);
    Route::post('/user/adoption/updatereq/{adoption_id}', [EmployeeController::class, 'ApproveAdoption']);
    Route::get('/user/adoptions/user/{user_id}', [EmployeeController::class, 'getUserAdoptions']);
    Route::delete('/user/adoption/delete/{adoption_id}', [EmployeeController::class, 'deleteAdoption']);
+   Route::get('/user/adoptions/pendingadoption/getall', [EmployeeController::class, 'getPendingAdoptions']);
+
    // employees
    Route::post('/user/employee/add', [EmployeeController::class, 'addEmployee']);
    Route::post('/user/employee/update/{employee_id}', [EmployeeController::class, 'updateEmployee']);
