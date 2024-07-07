@@ -204,7 +204,26 @@ public function getPendingSponcerships()
 
         $sponcerships = Sponcership::where('spon_status', 0)->get();
 
-        return ResponseHelper::success($sponcerships, 'Pending sponcerships retrieved successfully');
+        $response = [];
+
+        foreach ($sponcerships as $sponcership) {
+            $user = User::find($sponcership->user_id);
+            $animal = Animal::find($sponcership->animal_id);
+
+            $sponcershipDetails = [
+                'sponcership_id' => $sponcership->id,
+                'sponcership_date' => $sponcership->sponcership_date,
+                'spon_status' => $sponcership->spon_status,
+                'user' => $user,
+                'animal' => $animal,
+                'created_at' => $sponcership->created_at,
+                'updated_at' => $sponcership->updated_at,
+            ];
+
+            $response[] = $sponcershipDetails;
+        }
+
+        return ResponseHelper::success($response, 'Pending sponsorships retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
@@ -218,7 +237,26 @@ public function getAcceptingSponcerships()
 
         $sponcerships = Sponcership::where('spon_status', 1)->get();
 
-        return ResponseHelper::success($sponcerships, 'Approving sponcerships retrieved successfully');
+        $response = [];
+
+        foreach ($sponcerships as $sponcership) {
+            $user = User::find($sponcership->user_id);
+            $animal = Animal::find($sponcership->animal_id);
+
+            $sponcershipDetails = [
+                'sponcership_id' => $sponcership->id,
+                'sponcership_date' => $sponcership->sponcership_date,
+                'spon_status' => $sponcership->spon_status,
+                'user' => $user,
+                'animal' => $animal,
+                'created_at' => $sponcership->created_at,
+                'updated_at' => $sponcership->updated_at,
+            ];
+
+            $response[] = $sponcershipDetails;
+        }
+
+        return ResponseHelper::success($response, 'Approving sponsorships retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
@@ -226,13 +264,17 @@ public function getAcceptingSponcerships()
 public function getUserSponcerships($user_id)
 {
     try {
-
         $loggedInUser = Auth::user();
-        if ($loggedInUser->role !== '2' && $loggedInUser->id !== $user_id) {
+        if ( $loggedInUser->id != $user_id && $loggedInUser->role != 2) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        $sponcerships = Sponcership::where('user_id', $user_id)->with('animal:id,name')->get();
-        return ResponseHelper::success($sponcerships, 'User sponcerships retrieved successfully');
+
+        $sponcerships = Sponcership::where('user_id', $user_id)
+            ->where('spon_status', 1)
+            ->with('animal:id,name')
+            ->get();
+
+        return ResponseHelper::success($sponcerships, 'User sponsorships retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);
     } catch (Throwable $th) {
@@ -333,20 +375,43 @@ public function getPendingAdoptions()
 
         $adoptions = Adoption::where('adop_status', 0)->get();
 
-        return ResponseHelper::success($adoptions, 'Pending adoptions retrieved successfully');
+        $response = [];
+
+        foreach ($adoptions as $adoption) {
+            $user = User::find($adoption->user_id);
+            $animal = Animal::find($adoption->animal_id);
+
+            $adoptionDetails = [
+                'adoption_id' => $adoption->id,
+                'adoption_date' => $adoption->adoption_date,
+                'adop_status' => $adoption->adop_status,
+                'user' => $user,
+                'animal' => $animal,
+                'created_at' => $adoption->created_at,
+                'updated_at' => $adoption->updated_at,
+            ];
+
+            $response[] = $adoptionDetails;
+        }
+
+        return ResponseHelper::success($response, 'Pending adoptions retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getUserAdoptions($user_id)
 {
     try {
-        $loggedInUser = Auth::user();
-        if ($loggedInUser->role !== '2' && $loggedInUser->id !== $user_id) {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
-        $adoptions = Adoption::where('user_id', $user_id)->get();
+         $loggedInUser = Auth::user();
+
+            if ($loggedInUser->id != $user_id && $loggedInUser->role != 2) {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
+        $adoptions = Adoption::where('user_id', $user_id)
+            ->where('adop_status', 1)
+            ->with('animal:id,name')
+            ->get();
+
         return ResponseHelper::success($adoptions, 'User adoptions retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);
@@ -363,7 +428,26 @@ public function getAcceptingAdoptions()
 
         $adoptions = Adoption::where('adop_status', 1)->get();
 
-        return ResponseHelper::success($adoptions, 'Approving adoptions retrieved successfully');
+        $response = [];
+
+        foreach ($adoptions as $adoption) {
+            $user = User::find($adoption->user_id);
+            $animal = Animal::find($adoption->animal_id);
+
+            $adoptionDetails = [
+                'adoption_id' => $adoption->id,
+                'adoption_date' => $adoption->adoption_date,
+                'adop_status' => $adoption->adop_status,
+                'user' => $user,
+                'animal' => $animal,
+                'created_at' => $adoption->created_at,
+                'updated_at' => $adoption->updated_at,
+            ];
+
+            $response[] = $adoptionDetails;
+        }
+
+        return ResponseHelper::success($response, 'Approving adoptions retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
