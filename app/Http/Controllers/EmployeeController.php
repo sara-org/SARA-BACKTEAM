@@ -478,16 +478,7 @@ public function addFeeding(Request $request)
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|exists:departments,id',
         ]);
-        $existingFeeding = Feeding::where('department_id', $request->input('department_id'))
-        ->orWhere('feeding_date', $request->input('feeding_date'))
-        ->first();
 
-    if ($existingFeeding) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Duplicate feeding for this department and date',
-        ], 400);
-    }
         if ($validator->fails()) {
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
@@ -499,9 +490,21 @@ public function addFeeding(Request $request)
 
         $feedingData = [
             'department_id' => $request->input('department_id'),
-           'user_id' => Auth::user()->id,
-            'feeding_date' => carbon::now()->format('Y-m-d H-i-s'),
+            'user_id' => Auth::user()->id,
+            'feeding_date' => carbon::now()->format('Y-m-d'),
         ];
+
+        $existingFeeding = Feeding::where('department_id', $request->input('department_id'))
+        ->whereDate('feeding_date', Carbon::parse($feedingData['feeding_date'])->toDateString())
+        ->first();
+
+    if ($existingFeeding) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Duplicate feeding for this department and date',
+        ], 400);
+    }
+
 
         $feeding = Feeding::create($feedingData);
 
@@ -538,7 +541,7 @@ public function updateFeeding(Request $request, $feedingId)
         }
 
         $feeding->department_id = $request->input('department_id');
-        $feeding->feeding_date = Carbon::now()->format('Y-m-d H:i:s');
+        $feeding->feeding_date = Carbon::now()->format('Y-m-d');
         $feeding->save();
 
         return ResponseHelper::success($feeding, 'Feeding updated successfully');
@@ -570,12 +573,12 @@ public function getUserFeedings($user_id)
 {
     try {
         $loggedInUser = Auth::user();
-        if ($loggedInUser->role !== '2' || $loggedInUser->id != $user_id) {
+        if ($loggedInUser->role !== '2' && $loggedInUser->id != $user_id) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
         $user = User::findOrFail($user_id);
-        $feedingDepartments = $user->feedings()->with('department')->get();
+        $feedingDepartments = $user->feedings()->with('department')->whereDate('feeding_date', Carbon::today())->get();
 
         $departments = $feedingDepartments->map(function ($feeding) {
             return $feeding->department;
@@ -640,15 +643,15 @@ public function addVaccination(Request $request)
         ];
 
         $existingVaccination = Vaccination::where('department_id', $vaccinationData['department_id'])
-            ->whereDate('vaccination_date', Carbon::parse($vaccinationData['vaccination_date'])->toDateString())
-            ->first();
+        ->whereDate('vaccination_date', Carbon::parse($vaccinationData['vaccination_date'])->toDateString())
+        ->first();
 
-        if ($existingVaccination) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Duplicate vaccination for this department and date',
-            ], 400);
-        }
+    if ($existingVaccination) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Duplicate vaccination for this department and date',
+        ], 400);
+    }
 
         $vaccination = Vaccination::create($vaccinationData);
 
@@ -700,11 +703,12 @@ public function getUserVaccinations($user_id)
 {
     try {
         $loggedInUser = Auth::user();
-        if ($loggedInUser->role !== '2' || $loggedInUser->id != $user_id) {
+
+        if ($loggedInUser->id != $user_id && $loggedInUser->role != 2) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $user = User::findOrFail($user_id);
-        $vaccinationDepartments = $user->vaccinations()->with('department')->get();
+        $vaccinationDepartments = $user->vaccinations()->with('department')->whereDate('vaccination_date', Carbon::today())->get();
 
         $departments = $vaccinationDepartments->map(function ($vaccination) {
             return $vaccination->department;

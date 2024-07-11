@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('day');
             $table->time('start_time');
             $table->time('end_time');
+            $table->boolean('status')->default(0);
             $table->timestamps();
             $table->foreign('doctor_id')->references('id')->on('users');
         });

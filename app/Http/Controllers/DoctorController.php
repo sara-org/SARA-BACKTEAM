@@ -33,22 +33,30 @@ class DoctorController extends Controller
         if (Auth::user()->role != '2') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
+
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
             'address' => ['required', 'string'],
             'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', 3)],
         ]);
 
-
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
 
+        $existingDoctor = Doctor::where('user_id', $request->input('user_id'))->first();
+
+        if ($existingDoctor) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Duplicate entry for this doctor',
+            ], 400);
+        }
+
         $doctor = Doctor::create($request->all());
 
-        return response()->json(ResponseHelper::created($doctor , ' Doctor created'));
+        return response()->json(ResponseHelper::created($doctor, 'Doctor created'));
     }
-
     public function updateDoctor(Request $request, $doctor_id)
     {
         if (Auth::user()->role != '2') {
@@ -106,7 +114,7 @@ class DoctorController extends Controller
 
         return response()->json(ResponseHelper::success([], 'Doctor deleted'));
     }
-    public function addWorkingHours(Request $request)
+      public function addWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
@@ -117,20 +125,32 @@ class DoctorController extends Controller
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
         ]);
-        $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
-        ->orWhere('day', $request->input('day'))
-        ->orWhere('start_time', $request->input('start_time'))
-        ->orWhere('end_time', $request->input('end_time'))
-        ->first();
 
-    if ($existingWorkingHours) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Duplicate entry for this doctor hours',
-        ], 400);
-    }
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        }
+
+        $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
+            ->orwhere('day', $request->input('day'))
+            ->where(function ($query) use ($request) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('start_time', '<=', $request->input('start_time'))
+                        ->where('end_time', '>=', $request->input('start_time'));
+                })
+                ->orWhere(function ($q) use ($request) {
+                    $q->where('start_time', '<=', $request->input('end_time'))
+                        ->where('end_time', '>=', $request->input('end_time'));
+                });
+            })
+            ->first();
+
+        if ($existingWorkingHours) {
+            return response()->json([
+                'error' => [
+                    'status' => 'error',
+                    'message' => 'Duplicate entry for this doctor hours',
+                ]
+            ], 400);
         }
 
         $doctorId = auth('sanctum')->user()->id;
@@ -139,20 +159,29 @@ class DoctorController extends Controller
         $start = Carbon::parse($data['start_time']);
         $end = Carbon::parse($data['end_time']);
         $interval = CarbonInterval::minutes(30);
-        $workingHours = [];
-
+        $workingHoursData = [];
         while ($start < $end) {
-            $workingHours[] = [
+            $workingHoursData[] = [
                 'doctor_id' => $data['doctor_id'],
                 'day' => $data['day'],
                 'start_time' => $start->format('H:i'),
                 'end_time' => $start->addMinutes(30)->format('H:i'),
+                'status' => 0,
             ];
         }
 
-        WorkingHours::insert($workingHours);
 
-        return response()->json(ResponseHelper::created($workingHours, 'Working hours for doctor added'));
+        WorkingHours::insert($workingHoursData);
+        $response = [
+            'data' => [
+                'day' => $data['day'],
+                'working_hours' => $workingHoursData
+            ],
+            'success' => true,
+            'message' => 'Working hours for doctor added',
+        ];
+
+        return response()->json($response);
     }
     public function updateWorkingHours(Request $request, $id)
     {
@@ -180,9 +209,11 @@ class DoctorController extends Controller
         }
 
         $workingHours->update($request->all());
+        $day = $request->input('day');
 
-        return response()->json(ResponseHelper::success($workingHours, 'Working hours updated successfully'));
+        return response()->json(ResponseHelper::success(['day' => $day, 'working_hours' => $workingHours], 'Working hours updated successfully'));
     }
+
     public function getWorkingHours()
     {
         $user = auth('sanctum')->user();
@@ -194,7 +225,36 @@ class DoctorController extends Controller
         $doctorId = $user->id;
         $workingHours = WorkingHours::where('doctor_id', $doctorId)->get();
 
-        return response()->json(ResponseHelper::success($workingHours, 'Doctor working hours retrieved successfully'));
+        $workingHoursData = [];
+        foreach ($workingHours as $workingHour) {
+            $day = $workingHour->day;
+            $workingHoursData[$day][] = [
+                'start_time' => $workingHour->start_time,
+                'end_time' => $workingHour->end_time,
+            ];
+        }
+
+        $response = [
+            'data' => $workingHoursData,
+            'success' => true,
+            'message' => 'Doctor working hours retrieved successfully',
+        ];
+
+        return response()->json($response);
+    }
+    public function getWorkingDays()
+    {
+        $user = auth('sanctum')->user();
+
+        if ($user->role !== '2' && $user->role !== '3') {
+            return response()->json(ResponseHelper::error('Unauthorized', 401));
+        }
+
+        $doctorId = $user->id;
+        $workingDays = WorkingHours::where('doctor_id', $doctorId)->pluck('day')->toArray();
+        $uniqueWorkingDays = array_values(array_unique($workingDays));
+
+        return response()->json(ResponseHelper::success($uniqueWorkingDays, 'Doctor working days retrieved successfully'));
     }
     public function deleteWorkingHours($id)
     {
@@ -349,14 +409,22 @@ public function addAppointment(Request $request)
     $currentTime = Carbon::now();
     $halfHourLater = $currentTime->copy()->addMinutes(30);
 
-    $workingHours = WorkingHours::where('doctor_id', $doctor->id)
+    // $workingHours = WorkingHours::where('doctor_id', $doctor->id)
+    //     ->where('day', $request->day)
+    //     ->where('start_time', '<=', $reservedTime->format('H:i'))
+    //     ->where('end_time', '>=', $reservedTime->format('H:i'))
+    //     ->first();
+        $workingHours = WorkingHours::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
-        ->where('start_time', '<=', $reservedTime->format('H:i'))
-        ->where('end_time', '>=', $reservedTime->format('H:i'))
+        ->where('start_time', $request->reserved_time)
+        ->where('end_time', '>', $request->reserved_time)
         ->first();
-
+        if ($workingHours) {
+            $workingHours->status = 1;
+            $workingHours->save();
+        }
     if (!$workingHours) {
-        return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
+        return response()->json(ResponseHelper::error([], null, 'Invalid appointment roles', 422));
     }
 
     $date = Carbon::now()->format('Y-m-d');
@@ -387,7 +455,6 @@ public function addAppointment(Request $request)
         'doctor_id' => $doctor->id,
         'day' => $request->day,
         'reserved_time' => $request->reserved_time,
-        'status' => 1,
         'date' => $date,
     ]);
 
