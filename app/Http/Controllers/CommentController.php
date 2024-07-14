@@ -102,8 +102,7 @@ class CommentController extends Controller
     public function getPostComments($post_id)
 {
     try {
-        $comments = Comment::where('post_id', $post_id)->get();
-
+        $comments = Comment::with('user')->where('post_id', $post_id)->get();
         return ResponseHelper::success($comments, 'Comments retrieved successfully');
     } catch (\Exception $e) {
         return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve comments', 500);

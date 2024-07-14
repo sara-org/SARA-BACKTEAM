@@ -18,6 +18,9 @@ class PostController extends Controller
             'text' => 'required|string',
         ]);
 
+        if (Auth::user()->role != '2') {
+            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        }
         if ($validator->fails()) {
             return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
         }
@@ -38,6 +41,9 @@ class PostController extends Controller
             'text' => 'required|string',
         ]);
 
+  if (Auth::user()->role != '2') {
+            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        }
         if ($validator->fails()) {
             return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
         }
@@ -56,6 +62,9 @@ class PostController extends Controller
     public function deletePost($post_id)
     {
         try {
+            if (Auth::user()->role != '2') {
+                return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            }
             $post = Post::findOrFail($post_id);
             $post->delete();
 

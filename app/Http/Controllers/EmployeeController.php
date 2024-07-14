@@ -299,6 +299,7 @@ public function deleteSponcership($sponcership_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+
 public function ReqAdoption(Request $request)
 {
     try {
