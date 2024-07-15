@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 class Comment extends Model
 {
     protected $fillable = [ 'comment' ,'user_id' , 'post_id'];
-    protected $append = [
+    protected $appends = [
         'is_owner'
     ];
     public function user()

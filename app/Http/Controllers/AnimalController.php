@@ -39,7 +39,7 @@ class AnimalController extends Controller
 
             $user = Auth::user();
 
-            if ($user->role !== '4' && $user->role !== '2') {
+            if ($user->role != '4' && $user->role != '2') {
 
 
                 return response()->json(
@@ -136,7 +136,7 @@ class AnimalController extends Controller
 
     public function getAnimal($id)
     {
-        $animal = Animal::with('adoptions','sponcerships')->find($id);
+        $animal = Animal::with('adoptions.user', 'sponcerships.user')->find($id);
 
         if (!$animal) {
             return response()->json([
@@ -144,13 +144,6 @@ class AnimalController extends Controller
                 'message' => 'Animal not found',
             ], 404);
         }
-        // $animal=$animal->toArray();
-        // if(! count($animal['adoptions'])){
-        //     $animal['adoptions']=null;
-        // }
-        // if(! count($animal['sponcerships'])){
-        //     $animal['sponcerships']=null;
-        // }
         return response()->json([
             'status' => true,
             'message' => 'Animal retrieved successfully',

@@ -103,6 +103,8 @@ class CommentController extends Controller
 {
     try {
         $comments = Comment::with('user')->where('post_id', $post_id)->get();
+      //  $comments['is_owner'] = $comments['is_owner'];
+
         return ResponseHelper::success($comments, 'Comments retrieved successfully');
     } catch (\Exception $e) {
         return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve comments', 500);
