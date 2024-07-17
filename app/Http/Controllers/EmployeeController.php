@@ -42,8 +42,9 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
         }
-
-        $employee = Employee::create($request->all());
+        $data=$request->all();
+        $data['is_verified']=true;
+        $employee = Employee::create($data);
 
         return response()->json(ResponseHelper::created($employee, 'Employee created'));
     }

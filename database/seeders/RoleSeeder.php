@@ -3,19 +3,19 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Doctor;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
-
+use Illuminate\Support\Facades\Hash;
 
 class RoleSeeder extends Seeder
 {
     public function run()
     {
-
-        User::create([
+        $sara = User::create([
             'name' => 'Sara',
             'email' => 'sara@gmail.com',
-            'password' => bcrypt('password'),
+            'password' => Hash::make('password'),
             'phone' => '0998750053',
             'address' =>'Damascus',
             'photo' => 'admin.jpg',
@@ -23,10 +23,10 @@ class RoleSeeder extends Seeder
             'role'=> '2'
         ]);
 
-        User::create([
+        $ahmad = User::create([
             'name' => 'Ahmad',
-            'email' => 'Ahmad@gmail.com',
-            'password' => bcrypt('password'),
+            'email' => 'ahmad@gmail.com',
+            'password' => Hash::make('password'),
             'phone' => '0986646308',
             'address' => 'Damascus',
             'photo' => 'doctor1.jpg',
@@ -34,10 +34,16 @@ class RoleSeeder extends Seeder
             'role'=> '3'
         ]);
 
-        User::create([
+        Doctor::create([
+            'age' => '30',
+            'address' => 'Damascus',
+            'user_id' => $ahmad->id
+        ]);
+
+        $omar = User::create([
             'name' => 'Omar',
             'email' => 'omar@gmail.com',
-            'password' => bcrypt('password'),
+            'password' => Hash::make('password'),
             'phone' => '0967436775',
             'address' => 'Damascus',
             'photo' => 'doctor2.jpg',
@@ -45,5 +51,10 @@ class RoleSeeder extends Seeder
             'role'=> '3',
         ]);
 
+        Doctor::create([
+            'age' => '44',
+            'address' => 'Damascus',
+            'user_id' => $omar->id
+        ]);
     }
 }

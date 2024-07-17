@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Sanctum;
 use Illuminate\Support\Facades\Password;
 use App\Helper\ResponseHelper;
+use App\Mail\JobApplicationApprovedEmail;
 use App\Models\User;
 use App\Models\Animal;
 use App\Models\Donation;
@@ -80,22 +81,28 @@ class UserController extends Controller
         if ($request->has('email')) {
             if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
                 $user = $request->user();
+                if($user->role==='4' && !$user->employee->is_verified){
+                        return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
+                }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
                 $data['Token'] = $tokenResult;
             } else {
-                throw new AuthenticationException();
+                return ResponseHelper::error([], null, 'Invalid credentials', 422);
             }
         } else {
             if (Auth::attempt(['name' => $credentials['name'], 'password' => $credentials['password']])) {
                 $user = $request->user();
+                if($user->role==='4' && !$user->employee->is_verified){
+                    return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
+            }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
                 $data['Token'] = $tokenResult;
             } else {
-                throw new AuthenticationException();
+                return ResponseHelper::error([], null, 'Invalid credentials', 422);
             }
         }
 
@@ -499,5 +506,69 @@ public function deleteDonation($donation_id)
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
+}
+public function empReq(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'name' => ['required', 'string', Rule::unique('users')],
+        'email' => ['required', 'email', Rule::unique('users')],
+        'password' => ['required', 'min:8'],
+        'c_password' => ['required', 'same:password'],
+        'phone' => ['required', 'string'],
+        'gender' => ['required', 'string'],
+        'photo' => ['nullable', 'string'],
+        'address' => ['required', 'string'],
+        'wallet' => ['numeric'],
+        'age' => ['required', 'integer'],
+        'job_title' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i:s'],
+        'end_time' => [
+            'required',
+            'date_format:H:i:s',
+            Rule::notIn([$request->input('start_time')])
+        ],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    $requestData = $request->except([
+        'age',
+        'job_title',
+        'start_time',
+        'end_time'
+    ]);
+
+    $requestData['password'] = Hash::make($request->password);
+    $requestData['role']= '4';
+    $employeeData=$request->only([
+        'age',
+        'job_title',
+        'start_time',
+        'end_time'
+    ]);
+
+   $user = User::create($requestData)->employee()->create($employeeData);
+    // $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
+   // $data["user"] = $user;
+    // $data["tokenType"] = 'Bearer';
+    // $data["access_token"] = $user->createToken("API TOKEN")->plainTextToken;
+    return response()->json($user->user, Response::HTTP_CREATED);
+}
+
+public function approveUser(User $user)
+{
+    if (Auth::user()->role !== '2') {
+        return ResponseHelper::error([], null, 'Unauthorized', 401);
+    }
+    $user->employee->update(['is_verified'=>true]);
+
+    // إرسال رسالة بريد إلكتروني للموظف
+    // يمكنك استخدام مكتبة البريد الإلكتروني المفضلة لديك هنا لإرسال البريد
+    // مثلاً، إذا كنت تستخدم Laravel، يمكنك استخدام Mail facade
+
+    Mail::to($user->email)->send(new JobApplicationApprovedEmail($user)); // استبدل `JobApplicationApprovedEmail` بنموذج البريد الخاص بك
+    return response()->noContent();
 }
 }

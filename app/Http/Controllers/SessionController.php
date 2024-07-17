@@ -21,6 +21,9 @@ class SessionController extends Controller
     public function addSession(Request $request)
     {
         try {
+            if (Auth::user()->role !== '2') {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string',
                 'num_of_attendees' => 'required|numeric',
@@ -47,39 +50,50 @@ class SessionController extends Controller
     }
 
     public function updateSession(Request $request, $session_id)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'num_of_attendees' => 'required|numeric',
-        ]);
+    {
+        try {
+            if (Auth::user()->role !== '2') {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
 
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string',
+                'num_of_attendees' => 'required|numeric',
+            ]);
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
+            }
+
+            $session = Session::findOrFail($session_id);
+
+            $sessionData = [];
+
+            if ($request->has('title')) {
+                $sessionData['title'] = $request->input('title');
+            }
+            if ($request->has('num_of_attendees')) {
+                $sessionData['num_of_attendees'] = $request->input('num_of_attendees');
+            }
+            if ($request->has('date')) {
+                $sessionData['date'] = Carbon::now();
+            }
+
+            $session->update($sessionData);
+
+            return ResponseHelper::updated($session, 'Session updated successfully');
+        } catch (ValidationException $e) {
+            return ResponseHelper::error([], $e->errors(), 'Validation failed', 422);
+        } catch (\Exception $e) {
+            return ResponseHelper::error([], $e->getMessage(), 'An error occurred', 500);
         }
-
-        $session = Session::findOrFail($session_id);
-
-        $sessionData = [];
-
-        if ($request->has('title')) {$sessionData['title'] = $request->input('title');}
-        if ($request->has('num_of_attendees')) {$sessionData['num_of_attendees'] = $request->input('num_of_attendees');}
-        if ($request->has('date')) {$sessionData['date'] = Carbon::now();
-
-        $session->update($sessionData);
-
-        return ResponseHelper::success($session, 'session updated successfully');
     }
-}
- catch (ModelNotFoundException $exception) {
-        return ResponseHelper::error([], null, 'session not found', 404);
-    } catch (Throwable $th) {
-        return ResponseHelper::error([], null, $th->getMessage(), 500);
-    }
-}
 public function getSessionById($session_id)
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $session = session::findOrFail($session_id);
         return ResponseHelper::success($session, 'session retrieved successfully');
     } catch (ModelNotFoundException $exception) {
@@ -91,6 +105,9 @@ public function getSessionById($session_id)
 public function getAllSessions()
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $sessions = Session::all();
         return ResponseHelper::success($sessions, 'All sessions retrieved successfully');
     } catch (Throwable $th) {
@@ -100,6 +117,9 @@ public function getAllSessions()
 public function deleteSession($session_id)
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $session = Session::findOrFail($session_id);
         $session->delete();
         return ResponseHelper::success([], 'session deleted successfully');
@@ -114,8 +134,11 @@ public function deleteSession($session_id)
 public function addUserSession(Request $request)
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $validator = Validator::make($request->all(), [
-            'session_date' => 'required|date',
+            'session_date' => 'date',
             'session_id' => 'required|exists:sessions,id',
         ]);
 
@@ -141,6 +164,9 @@ public function addUserSession(Request $request)
 public function updateUserSession(Request $request, $user_session_id)
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $validator = Validator::make($request->all(), [
             'session_date' => 'nullable|date',
             'user_id' => 'nullable|exists:users,id',
@@ -169,6 +195,9 @@ public function updateUserSession(Request $request, $user_session_id)
 public function getUserSessionById($user_session_id)
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $usersession = UserSession::findOrFail($user_session_id);
         return ResponseHelper::success($usersession, 'User session retrieved successfully');
     } catch (ModelNotFoundException $exception) {
@@ -180,6 +209,9 @@ public function getUserSessionById($user_session_id)
 public function getAllUserSessions()
 {
     try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $userSessions = UserSession::all();
         return ResponseHelper::success($userSessions, 'All user sessions retrieved successfully');
     } catch (Throwable $th) {
@@ -190,6 +222,9 @@ public function deleteUserSession($user_session_id)
 {
     try {
         $user = auth()->user();
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $usersession = UserSession::findOrFail($user_session_id);
         if ($user->id === $usersession->user_id) {
             $usersession->delete();

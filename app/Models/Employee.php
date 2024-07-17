@@ -15,6 +15,7 @@ class Employee extends Model
         'start_time',
         'end_time',
         'user_id',
+        'is_verified'
     ];
 
     public function user()

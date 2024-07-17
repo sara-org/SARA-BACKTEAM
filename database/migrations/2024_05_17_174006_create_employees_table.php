@@ -18,6 +18,7 @@ return new class extends Migration
             $table->time('start_time');
             $table->time('end_time');
             $table->unsignedBigInteger('user_id');
+            $table->boolean('is_verified')->default(false);
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users');
         });

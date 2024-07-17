@@ -14,6 +14,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CenterController;
 use App\Http\Controllers\RequestController;
+use App\Http\Controllers\SessionController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -27,11 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Users
+    // Admins
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
     Route::get('/users/all', [UserController::class, 'getAllUsers']);
-
+    Route::put('/user/approvereq/{user}', [UserController::class, 'approveUser']);
 
     // wallet
     Route::post('/user/wallet/charge/{user_id}', [UserController::class, 'chargeWallet']);
@@ -167,7 +169,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
     Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
     Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
-
     //requests
     Route::post('/user/request/add', [RequestController::class, 'addRequest']);
     Route::post('/user/request/update/{id}', [RequestController::class, 'updateRequest']);
@@ -189,6 +190,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/docrequest/get/{id}', [RequestController::class, 'getDocreq']);
     Route::get('/user/docrequests', [RequestController::class, 'getAllDocreqs']);
     Route::delete('/user/docrequest/delete/{id}', [RequestController::class, 'deleteDocreq']);
+    // sessions
+    Route::post('/user/session/add', [SessionController::class, 'addSession']);
+    Route::post('/user/session/update/{id}', [SessionController::class, 'updateSession']);
+    Route::get('/user/session/get/{id}', [SessionController::class, 'getSessionById']);
+    Route::get('/user/sessions', [SessionController::class, 'getAllSessions']);
+    Route::delete('/user/session/delete/{id}', [SessionController::class, 'deleteSession']);
+    // userSessions
+    Route::post('/user/usersession/add', [SessionController::class, 'addUserSession']);
+    Route::post('/user/usersession/update/{id}', [SessionController::class, 'updateUserSession']);
+    Route::get('/user/usersession/get/{id}', [SessionController::class, 'getUserSessionById']);
+    Route::get('/user/usersessions', [SessionController::class, 'getAllUserSessions']);
+    Route::delete('/user/usersession/delete/{id}', [SessionController::class, 'deleteUserSession']);
 });
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
@@ -198,3 +211,6 @@ Route::post('/password/code/check', [UserController::class, 'userCheckCode']);
 Route::post('/password/reset', [UserController::class, 'userResetPassword']);
 Route::post('/email/requestverify', [UserController::class, 'requestVerifyAccount']);
 Route::post('/email/verify', [UserController::class, 'verifyAccount']);
+Route::post('/user/empreq', [UserController::class, 'empReq']);
+
+
