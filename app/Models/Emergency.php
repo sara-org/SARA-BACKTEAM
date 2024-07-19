@@ -15,11 +15,15 @@ class Emergency extends Model
         'description',
         'contact',
         'photo',
-
+        'user_id',
+        'emr_date',
        ];
        public function userEmergencies()
     {
-        return $this->hasMany(UserEmr::class);
+        return $this->hasOne(UserEmr::class,'emergency_id');
+    }
+    public function owner(){
+        return $this->belongsTo(User::class,'user_id');
     }
 
 }

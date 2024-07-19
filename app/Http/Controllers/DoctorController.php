@@ -409,11 +409,6 @@ public function addAppointment(Request $request)
     $currentTime = Carbon::now();
     $halfHourLater = $currentTime->copy()->addMinutes(30);
 
-    // $workingHours = WorkingHours::where('doctor_id', $doctor->id)
-    //     ->where('day', $request->day)
-    //     ->where('start_time', '<=', $reservedTime->format('H:i'))
-    //     ->where('end_time', '>=', $reservedTime->format('H:i'))
-    //     ->first();
         $workingHours = WorkingHours::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('start_time', $request->reserved_time)

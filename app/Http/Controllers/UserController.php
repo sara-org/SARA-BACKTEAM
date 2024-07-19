@@ -509,16 +509,11 @@ public function deleteDonation($donation_id)
 }
 public function empReq(Request $request)
 {
+    if (!Auth::check()) {
+        return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+    }
+    $loggedInUser = Auth::user();
     $validator = Validator::make($request->all(), [
-        'name' => ['required', 'string', Rule::unique('users')],
-        'email' => ['required', 'email', Rule::unique('users')],
-        'password' => ['required', 'min:8'],
-        'c_password' => ['required', 'same:password'],
-        'phone' => ['required', 'string'],
-        'gender' => ['required', 'string'],
-        'photo' => ['nullable', 'string'],
-        'address' => ['required', 'string'],
-        'wallet' => ['numeric'],
         'age' => ['required', 'integer'],
         'job_title' => ['required', 'string'],
         'start_time' => ['required', 'date_format:H:i:s'],
@@ -532,43 +527,33 @@ public function empReq(Request $request)
     if ($validator->fails()) {
         return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
     }
-
-    $requestData = $request->except([
-        'age',
-        'job_title',
-        'start_time',
-        'end_time'
+    if (Auth::user()->role !== '1') {
+        return ResponseHelper::error([], null, 'You can not do this request.', 400);
+    }
+    $loggedInUser->update([
+        'role'=>'4'
     ]);
+    $employeeData = $request->all();
 
-    $requestData['password'] = Hash::make($request->password);
-    $requestData['role']= '4';
-    $employeeData=$request->only([
-        'age',
-        'job_title',
-        'start_time',
-        'end_time'
-    ]);
-
-   $user = User::create($requestData)->employee()->create($employeeData);
-    // $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
-   // $data["user"] = $user;
-    // $data["tokenType"] = 'Bearer';
-    // $data["access_token"] = $user->createToken("API TOKEN")->plainTextToken;
-    return response()->json($user->user, Response::HTTP_CREATED);
+    $loggedInUser->employee()->updateOrCreate($employeeData);
+    $loggedInUser->load('employee');
+    return response()->json($loggedInUser, Response::HTTP_CREATED);
 }
-
 public function approveUser(User $user)
 {
     if (Auth::user()->role !== '2') {
         return ResponseHelper::error([], null, 'Unauthorized', 401);
     }
-    $user->employee->update(['is_verified'=>true]);
 
-    // إرسال رسالة بريد إلكتروني للموظف
-    // يمكنك استخدام مكتبة البريد الإلكتروني المفضلة لديك هنا لإرسال البريد
-    // مثلاً، إذا كنت تستخدم Laravel، يمكنك استخدام Mail facade
+    $user->employee->update(['is_verified' => true]);
 
-    Mail::to($user->email)->send(new JobApplicationApprovedEmail($user)); // استبدل `JobApplicationApprovedEmail` بنموذج البريد الخاص بك
-    return response()->noContent();
+    $emailSent = Mail::to($user->email)->send(new JobApplicationApprovedEmail($user));
+
+    if ($emailSent) {
+        return response()->json(['message' => 'Email has been sent successfully'], Response::HTTP_OK);
+    } else {
+        return response()->json(['message' => 'Failed to send email'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
 }
+
 }

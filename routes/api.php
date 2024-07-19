@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
     Route::get('/users/all', [UserController::class, 'getAllUsers']);
+    Route::post('/user/empreq', [UserController::class, 'empReq']);
     Route::put('/user/approvereq/{user}', [UserController::class, 'approveUser']);
 
     // wallet
@@ -116,17 +117,20 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
    Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
    Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
-  //---------// emergencies
+  // emergencies
    Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
    Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
    Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
    Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
+   Route::get('/user/emergency/getallbydate', [EmergencyController::class, 'getEmergenciesByDate']);
+   Route::get('/user/emergency/getuser/{user_id}', [EmergencyController::class, 'getUserEmergencies']);
    Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
-  //---------// User Emergencies
+  //User Emergencies
    Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
    Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
    Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
-   Route::get('/user/useremergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
+   Route::get('/user/empemergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
+   Route::get('/user/empemergency/getallbydate', [EmergencyController::class, 'getUserEmergenciesByDate']);
    Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
    // posts
    Route::post('/user/post/add', [PostController::class, 'addPost']);
@@ -163,7 +167,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
-    //----------//
+    //<----->
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
     Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
@@ -211,6 +215,5 @@ Route::post('/password/code/check', [UserController::class, 'userCheckCode']);
 Route::post('/password/reset', [UserController::class, 'userResetPassword']);
 Route::post('/email/requestverify', [UserController::class, 'requestVerifyAccount']);
 Route::post('/email/verify', [UserController::class, 'verifyAccount']);
-Route::post('/user/empreq', [UserController::class, 'empReq']);
 
 

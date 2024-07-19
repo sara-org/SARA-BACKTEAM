@@ -84,7 +84,7 @@ class EmployeeController extends Controller
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
-        $employees = Employee::all();
+        $employees = Employee::with('user')->where('is_verified',request('is_verified')?? true)->get();
 
         return response()->json(ResponseHelper::success($employees, 'Employees retrieved'));
     }

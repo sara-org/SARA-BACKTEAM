@@ -89,6 +89,10 @@ public function vaccinations()
 {
     return $this->hasMany(Vaccination::class);
 }
+public function emergencies()
+{
+    return $this->hasMany(Emergency::class);
+}
 public function userEmergencies()
     {
         return $this->hasMany(UserEmr::class);

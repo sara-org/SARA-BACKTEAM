@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Emergency;
 class UserEmr extends Model
 {
+    protected $table = 'user_emergencies';
     protected $fillable = [
         'status',
         'date',
