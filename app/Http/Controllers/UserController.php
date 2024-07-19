@@ -81,9 +81,9 @@ class UserController extends Controller
         if ($request->has('email')) {
             if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
                 $user = $request->user();
-                if($user->role==='4' && !$user->employee->is_verified){
-                        return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
-                }
+                // if($user->role==='4' && !$user->employee->is_verified){
+                //         return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
+                // }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
@@ -94,9 +94,9 @@ class UserController extends Controller
         } else {
             if (Auth::attempt(['name' => $credentials['name'], 'password' => $credentials['password']])) {
                 $user = $request->user();
-                if($user->role==='4' && !$user->employee->is_verified){
-                    return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
-            }
+            //     if($user->role==='4' && !$user->employee->is_verified){
+            //         return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
+            // }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
@@ -512,6 +512,7 @@ public function empReq(Request $request)
     if (!Auth::check()) {
         return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
     }
+
     $loggedInUser = Auth::user();
     $validator = Validator::make($request->all(), [
         'age' => ['required', 'integer'],
@@ -527,16 +528,16 @@ public function empReq(Request $request)
     if ($validator->fails()) {
         return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
     }
-    if (Auth::user()->role !== '1') {
-        return ResponseHelper::error([], null, 'You can not do this request.', 400);
-    }
-    $loggedInUser->update([
-        'role'=>'4'
-    ]);
-    $employeeData = $request->all();
 
-    $loggedInUser->employee()->updateOrCreate($employeeData);
+    if ($loggedInUser->role !== '1') {
+        return ResponseHelper::error([], null, 'You cannot make this request.', 400);
+    }
+
+    $employeeData = $request->only(['age', 'job_title', 'start_time', 'end_time']);
+
+    $loggedInUser->employee()->updateOrCreate([], $employeeData);
     $loggedInUser->load('employee');
+
     return response()->json($loggedInUser, Response::HTTP_CREATED);
 }
 public function approveUser(User $user)
@@ -545,7 +546,14 @@ public function approveUser(User $user)
         return ResponseHelper::error([], null, 'Unauthorized', 401);
     }
 
-    $user->employee->update(['is_verified' => true]);
+    if ($user->employee) {
+        $user->employee->update([
+            'is_verified' => true,
+        ]);
+        $user->update([
+            'role' => '4'
+        ]);
+    }
 
     $emailSent = Mail::to($user->email)->send(new JobApplicationApprovedEmail($user));
 
@@ -555,5 +563,4 @@ public function approveUser(User $user)
         return response()->json(['message' => 'Failed to send email'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
-
 }

@@ -83,7 +83,7 @@ class DoctorController extends Controller
     }
     public function getAllDoctors()
     {
-        $doctors = Doctor::all();
+        $doctors = Doctor::with('user')->get();
 
         return response()->json(ResponseHelper::success($doctors, 'All Doctors Are retrieved'));
     }
