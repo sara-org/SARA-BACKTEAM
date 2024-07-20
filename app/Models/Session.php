@@ -9,11 +9,11 @@ class Session extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'num_of_attendees', 'date'];
+    protected $fillable = ['title', 'num_of_attendees', 'date','time'];
 
 
-    public function usersessions()
+    public function user()
     {
-        return $this->hasMany(UserSession::class);
+        return $this->belongsTo(User::class);
     }
 }

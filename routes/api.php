@@ -161,10 +161,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/admin/image/delete/{centerinfo_id}', [CenterController::class, 'deleteImage']);
     //working times
     Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
-    Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
+    Route::post('/user/doctor/working-hours/update', [DoctorController::class, 'updateWorkingHours']);
     Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
-    Route::get('/user/doctor/working-days/get/{doctor_id}', [DoctorController::class, 'getWorkingDays']);
-    Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
+    Route::get('/user/doctor/working-days/get', [DoctorController::class, 'getWorkingDays']);
+    Route::delete('/user/doctor/working-hours/delete', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
     //<----->

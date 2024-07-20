@@ -226,53 +226,55 @@ class DoctorController extends Controller
         return ResponseHelper::success(['day' => $day, 'working_hours' => $workingHoursData], 'Working hours updated successfully');
     }
 
+
     public function getWorkingHours(Request $request)
     {
+        $user = Auth::user();
         $doctorId = $request->input('doctor_id');
-
-        $doctor = User::where('id', $doctorId)
-
-            ->first();
-
-            return ResponseHelper::success($doctor->doctimes->toArray());
+        if ($user->role !== '2' && $user->id != $request->input('doctor_id'))
+    { return ResponseHelper::error(null, null, 'Unauthorized', 401);}
+        $doctor = User::where('id', $doctorId)->first();
+        return ResponseHelper::success($doctor->doctimes->toArray());
     }
-public function getWorkingDays(Request $request)
+
+
+    public function getWorkingDays(Request $request)
 {
-    $doctorId = $request->query('doctor_id');
+    $user = Auth::user();
+    $doctorId = $request->input('doctor_id');
 
-    $doctor = User::where('id', $doctorId)
-    ->where('role', '3')
-    ->first();
-    if (!$doctor) {
-        return response()->json(ResponseHelper::error('Doctor not found', 404));
+    if ($user->role !== '2' && $user->id != $doctorId) {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
-    $user = auth('sanctum')->user();
-
-    if ($user->role !== '2' && $user->role !== '3') {
-        return response()->json(ResponseHelper::error('Unauthorized', 401));
-    }
-
-    $workingDays = WorkingHours::where('doctor_id', $doctorId)->pluck('day')->toArray();
-    $uniqueWorkingDays = array_values(array_unique($workingDays));
-
-    return response()->json(ResponseHelper::success($uniqueWorkingDays, 'Doctor working days retrieved successfully'));
+    $doctor = User::where('id', $doctorId)->first();
+    $workingDays = $doctor->doctimes->pluck('day')->toArray();
+    $uniqueWorkingDays = array_unique($workingDays);
+    $valuesOnly = array_values($uniqueWorkingDays);
+    return ResponseHelper::success($valuesOnly);
 }
-    public function deleteWorkingHours($id)
-    {
-        $doctorId = auth('sanctum')->user()->id;
-        $workingHours = WorkingHours::where('id', $id)
-            ->where('doctor_id', $doctorId)
-            ->first();
 
-        if (!$workingHours) {
-            return response()->json(ResponseHelper::error(null, 'Working hours not found', 'Not found', 404));
-        }
+public function deleteWorkingHours(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'doctor_id' => ['required', 'integer'],
+        'day' => ['required', 'string'],
+    ]);
 
-        $workingHours->delete();
-
-        return response()->json(ResponseHelper::success(null, 'Working hours deleted successfully'));
+    if ($validator->fails()) {
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
+
+    $doctorId = $request->input('doctor_id');
+    $day = $request->input('day');
+    if (Auth::user()->role !== '2' && Auth::user()->id != $request->input('doctor_id'))
+    { return ResponseHelper::error(null, null, 'Unauthorized', 401);}
+    WorkingHours::where('doctor_id', $doctorId)
+        ->where('day', $day)
+        ->delete();
+
+    return ResponseHelper::success(['doctor_id' => $doctorId, 'day' => $day], 'Working hours deleted successfully');
+}
     public function addMedicalRecord(Request $request)
     {
         if (Auth::user()->role != '3') {
@@ -421,7 +423,7 @@ public function addAppointment(Request $request)
             $workingHours->save();
         }
     if (!$workingHours) {
-        return response()->json(ResponseHelper::error([], null, 'Invalid appointment roles', 422));
+        return ResponseHelper::error([], null, 'Invalid appointment roles', 422);
     }
 
     $date = Carbon::now()->format('Y-m-d');
@@ -434,7 +436,7 @@ public function addAppointment(Request $request)
         ->first();
 
     if ($existingAppointment) {
-        return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));
+        return ResponseHelper::error([], null, 'Appointment already exists at this time', 422);
     }
 
     //Check if there is an appointment in the same time slot within the last 7 days
@@ -514,7 +516,7 @@ public function updateAppointment(Request $request, $id)
     $appointment->reserved_time = $request->reserved_time;
     $appointment->save();
 
-    return response()->json(ResponseHelper::success($appointment, 'Appointment updated'));
+    return ResponseHelper::success($appointment, 'Appointment updated');
 }
 public function getAppointmentsForDay(Request $request)
 {

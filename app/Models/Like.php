@@ -10,7 +10,7 @@ class Like extends Model
 
     protected $fillable = [ 'like_date' ,'user_id' , 'post_id'];
     protected $append = [
-        'is_owner'
+        'is_liked'
     ];
     public function user()
     {
@@ -22,7 +22,7 @@ class Like extends Model
     {
         return $this->belongsTo(Post::class);
     }
-    protected function isOwner(): Attribute
+    protected function isLiked(): Attribute
     {
         return Attribute::make(
             get: function () {

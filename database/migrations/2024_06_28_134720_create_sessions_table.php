@@ -18,6 +18,7 @@ class CreateSessionsTable extends Migration
             $table->string('title');
             $table->integer('num_of_attendees');
             $table->date('date');
+            $table->time('time');
             $table->timestamps();
         });
     }

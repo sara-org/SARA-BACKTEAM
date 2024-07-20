@@ -121,8 +121,8 @@ public function userEmergencies()
     {
         return $this->hasMany(Appointment::class);
     }
-    public function usersessions()
+    public function sessions()
     {
-        return $this->hasMany(UserSession::class);
+        return $this->hasMany(Session::class);
     }
 }
