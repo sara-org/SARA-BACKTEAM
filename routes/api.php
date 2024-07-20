@@ -163,7 +163,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
     Route::post('/user/doctor/working-hours/update/{id}', [DoctorController::class, 'updateWorkingHours']);
     Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
-    Route::get('/user/doctor/working-days/get', [DoctorController::class, 'getWorkingDays']);
+    Route::get('/user/doctor/working-days/get/{doctor_id}', [DoctorController::class, 'getWorkingDays']);
     Route::delete('/user/doctor/working-hours/delete/{id}', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);

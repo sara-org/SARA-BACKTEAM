@@ -18,12 +18,11 @@ class RequestController extends Controller
 {
     public function addRequest(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-         //   'user_id' => 'exists:users,id',
-        ]);
-        if ($validator->fails()) {
-            return ResponseHelper::error([], null, 'Validation error', 400);
-        }
+        // $validator = Validator::make($request->all(), [
+        // ]);
+        // if ($validator->fails()) {
+        //     return ResponseHelper::error([], null, 'Validation error', 400);
+        // }
 
         if (!auth()->check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);

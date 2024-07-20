@@ -109,6 +109,10 @@ public function userEmergencies()
     {
         return $this->hasMany(Comment::class);
     }
+    public function doctimes()
+    {
+        return $this->hasMany(WorkingHours::class,'doctor_id');
+    }
     public function likes()
     {
         return $this->hasMany(Like::class);

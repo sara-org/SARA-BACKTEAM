@@ -183,79 +183,81 @@ class DoctorController extends Controller
 
         return response()->json($response);
     }
-    public function updateWorkingHours(Request $request, $id)
+
+
+    public function updateWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
             return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
         }
 
         $validator = Validator::make($request->all(), [
-            'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+            'day' => ['required', 'string'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
         ]);
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
 
         $doctorId = auth('sanctum')->user()->id;
-        $workingHours = WorkingHours::where('id', $id)
-            ->where('doctor_id', $doctorId)
-            ->first();
-
-        if (!$workingHours) {
-            return response()->json(ResponseHelper::error(null, 'Working hours not found', 'Not found', 404));
-        }
-
-        $workingHours->update($request->all());
         $day = $request->input('day');
 
-        return response()->json(ResponseHelper::success(['day' => $day, 'working_hours' => $workingHours], 'Working hours updated successfully'));
-    }
+        WorkingHours::where('doctor_id', $doctorId)
+            ->where('day', $day)
+            ->delete();
 
-    public function getWorkingHours()
-    {
-        $user = auth('sanctum')->user();
-
-        if ($user->role !== '2' && $user->role !== '3') {
-            return response()->json(ResponseHelper::error('Unauthorized', 401));
-        }
-
-        $doctorId = $user->id;
-        $workingHours = WorkingHours::where('doctor_id', $doctorId)->get();
-
+        $start = Carbon::parse($request->input('start_time'));
+        $end = Carbon::parse($request->input('end_time'));
+        $interval = CarbonInterval::minutes(30);
         $workingHoursData = [];
-        foreach ($workingHours as $workingHour) {
-            $day = $workingHour->day;
-            $workingHoursData[$day][] = [
-                'start_time' => $workingHour->start_time,
-                'end_time' => $workingHour->end_time,
+        while ($start < $end) {
+            $workingHoursData[] = [
+                'doctor_id' => $doctorId,
+                'day' => $day,
+                'start_time' => $start->format('H:i'),
+                'end_time' => $start->addMinutes(30)->format('H:i'),
+                'status' => 0,
             ];
         }
+        WorkingHours::insert($workingHoursData);
 
-        $response = [
-            'data' => $workingHoursData,
-            'success' => true,
-            'message' => 'Doctor working hours retrieved successfully',
-        ];
-
-        return response()->json($response);
+        return ResponseHelper::success(['day' => $day, 'working_hours' => $workingHoursData], 'Working hours updated successfully');
     }
-    public function getWorkingDays()
+
+    public function getWorkingHours(Request $request)
     {
-        $user = auth('sanctum')->user();
+        $doctorId = $request->input('doctor_id');
 
-        if ($user->role !== '2' && $user->role !== '3') {
-            return response()->json(ResponseHelper::error('Unauthorized', 401));
-        }
+        $doctor = User::where('id', $doctorId)
 
-        $doctorId = $user->id;
-        $workingDays = WorkingHours::where('doctor_id', $doctorId)->pluck('day')->toArray();
-        $uniqueWorkingDays = array_values(array_unique($workingDays));
+            ->first();
 
-        return response()->json(ResponseHelper::success($uniqueWorkingDays, 'Doctor working days retrieved successfully'));
+            return ResponseHelper::success($doctor->doctimes->toArray());
     }
+public function getWorkingDays(Request $request)
+{
+    $doctorId = $request->query('doctor_id');
+
+    $doctor = User::where('id', $doctorId)
+    ->where('role', '3')
+    ->first();
+    if (!$doctor) {
+        return response()->json(ResponseHelper::error('Doctor not found', 404));
+    }
+
+    $user = auth('sanctum')->user();
+
+    if ($user->role !== '2' && $user->role !== '3') {
+        return response()->json(ResponseHelper::error('Unauthorized', 401));
+    }
+
+    $workingDays = WorkingHours::where('doctor_id', $doctorId)->pluck('day')->toArray();
+    $uniqueWorkingDays = array_values(array_unique($workingDays));
+
+    return response()->json(ResponseHelper::success($uniqueWorkingDays, 'Doctor working days retrieved successfully'));
+}
     public function deleteWorkingHours($id)
     {
         $doctorId = auth('sanctum')->user()->id;
