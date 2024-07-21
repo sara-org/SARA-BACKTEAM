@@ -120,7 +120,7 @@ class UserController extends Controller
     public function updateUser(Request $request, $user_id)
 {
     if (Auth::user()->id != $user_id) {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
     $validator = Validator::make($request->all(), [
         'name' => ['required', 'string'],
@@ -133,18 +133,18 @@ class UserController extends Controller
     ]);
 
     if ($validator->fails()) {
-        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
     $user = User::find($user_id);
 
     if (!$user) {
-        return response()->json(ResponseHelper::error([], null, 'User not found', 404));
+        return ResponseHelper::error([], null, 'User not found', 404);
     }
 
     $user->update($request->all());
 
-    return response()->json(ResponseHelper::updated($user, 'User updated'));
+    return ResponseHelper::updated($user, 'User updated');
 }
     public function userForgotPassword(Request $request): JsonResponse
     {
@@ -191,7 +191,7 @@ class UserController extends Controller
     public function getAllUsers()
     {
         $users = User::all();
-        return response()->json(ResponseHelper::success($users, 'All Users Are retrieved'));
+        return ResponseHelper::success($users, 'All Users Are retrieved');
     }
     public function userResetPassword(Request $request): JsonResponse
     {

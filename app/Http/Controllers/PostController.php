@@ -19,7 +19,7 @@ class PostController extends Controller
         ]);
 
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         if ($validator->fails()) {
             return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
@@ -42,7 +42,7 @@ class PostController extends Controller
         ]);
 
   if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         if ($validator->fails()) {
             return ResponseHelper::error([], $validator->errors(), 'Validation error', 400);
@@ -63,7 +63,7 @@ class PostController extends Controller
     {
         try {
             if (Auth::user()->role != '2') {
-                return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+                return ResponseHelper::error(null, null, 'Unauthorized', 401);
             }
             $post = Post::findOrFail($post_id);
             $post->delete();
@@ -79,6 +79,8 @@ class PostController extends Controller
         try {
             $post = Post::with('likes','comments')->findOrFail($id);
             $post['is_owner'] = $post['is_owner'];
+            $post['is_liked'] = $post['is_liked'];
+
             return ResponseHelper::success($post, 'Post retrieved successfully');
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve post', 500);

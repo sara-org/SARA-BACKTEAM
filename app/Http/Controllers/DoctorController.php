@@ -41,7 +41,7 @@ class DoctorController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
 
         $existingDoctor = Doctor::where('user_id', $request->input('user_id'))->first();
@@ -55,12 +55,12 @@ class DoctorController extends Controller
 
         $doctor = Doctor::create($request->all());
 
-        return response()->json(ResponseHelper::created($doctor, 'Doctor created'));
+        return ResponseHelper::created($doctor, 'Doctor created');
     }
     public function updateDoctor(Request $request, $doctor_id)
     {
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
@@ -69,23 +69,23 @@ class DoctorController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
         $doctor = Doctor::find($doctor_id);
 
         if (!$doctor) {
-            return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+            return ResponseHelper::error([], null, 'Doctor not found', 404);
         }
 
         $doctor->update($request->all());
 
-        return response()->json(ResponseHelper::updated($doctor, 'Doctor updated'));
+        return ResponseHelper::updated($doctor, 'Doctor updated');
     }
     public function getAllDoctors()
     {
         $doctors = Doctor::with('user')->get();
 
-        return response()->json(ResponseHelper::success($doctors, 'All Doctors Are retrieved'));
+        return ResponseHelper::success($doctors, 'All Doctors Are retrieved');
     }
 
     public function getDoctor($doctor_id)
@@ -93,31 +93,31 @@ class DoctorController extends Controller
         $doctor = Doctor::with('user')->find($doctor_id);
 
         if (!$doctor) {
-            return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+            return ResponseHelper::error([], null, 'Doctor not found', 404);
         }
 
-        return response()->json(ResponseHelper::success($doctor, 'Doctor retrieved'));
+        return ResponseHelper::success($doctor, 'Doctor retrieved');
     }
     public function deleteDoctor($doctor_id)
     {
 
       if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $doctor = Doctor::with('user')->find($doctor_id);
 
         if (!$doctor) {
-            return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+            return ResponseHelper::error([], null, 'Doctor not found', 404);
         }
 
         $doctor->delete();
 
-        return response()->json(ResponseHelper::success([], 'Doctor deleted'));
+        return ResponseHelper::success([], 'Doctor deleted');
     }
       public function addWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
 
         $validator = Validator::make($request->all(), [
@@ -127,7 +127,7 @@ class DoctorController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
 
         $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
@@ -188,7 +188,7 @@ class DoctorController extends Controller
     public function updateWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
 
         $validator = Validator::make($request->all(), [
@@ -278,7 +278,7 @@ public function deleteWorkingHours(Request $request)
     public function addMedicalRecord(Request $request)
     {
         if (Auth::user()->role != '3') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
 
         $validator = Validator::make($request->all(), [
@@ -288,7 +288,7 @@ public function deleteWorkingHours(Request $request)
         ]);
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
 
         $doctorId = Auth::user()->id;
@@ -298,12 +298,12 @@ public function deleteWorkingHours(Request $request)
 
         $medicalRecord = MedicalRecord::create($data);
 
-        return response()->json(ResponseHelper::created($medicalRecord, 'Medical record created'));
+        return ResponseHelper::created($medicalRecord, 'Medical record created');
     }
     public function updateMedicalRecord(Request $request, $id)
 {
     if (Auth::user()->role != '3') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $validator = Validator::make($request->all(), [
@@ -313,7 +313,7 @@ public function deleteWorkingHours(Request $request)
     ]);
 
     if ($validator->fails()) {
-        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
     $doctorId = Auth::user()->id;
@@ -321,11 +321,11 @@ public function deleteWorkingHours(Request $request)
     $medicalRecord = MedicalRecord::find($id);
 
     if (!$medicalRecord) {
-        return response()->json(ResponseHelper::error(null, null, 'Medical record not found', 404));
+        return ResponseHelper::error(null, null, 'Medical record not found', 404);
     }
 
     if ($medicalRecord->doctor_id != $doctorId) {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $data = $request->all();
@@ -333,26 +333,26 @@ public function deleteWorkingHours(Request $request)
 
     $medicalRecord->update($data);
 
-    return response()->json(ResponseHelper::updated($medicalRecord, 'Medical record updated'));
+    return ResponseHelper::updated($medicalRecord, 'Medical record updated');
 }
 
 public function getAllMedicalRecords()
 {
     if (Auth::user()->role != '3') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $doctorId = Auth::user()->id;
 
     $medicalRecords = MedicalRecord::where('doctor_id', $doctorId)->get();
 
-    return response()->json(ResponseHelper::success($medicalRecords, 'All Medical Records retrieved'));
+    return ResponseHelper::success($medicalRecords, 'All Medical Records retrieved');
 }
 
 public function getMedicalRecord($id)
 {
     if (Auth::user()->role != '3') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $doctorId = Auth::user()->id;
@@ -360,15 +360,15 @@ public function getMedicalRecord($id)
     $medicalRecord = MedicalRecord::where('doctor_id', $doctorId)->find($id);
 
     if (!$medicalRecord) {
-        return response()->json(ResponseHelper::error([], null, 'Medical record not found', 404));
+        return ResponseHelper::error([], null, 'Medical record not found', 404);
     }
 
-    return response()->json(ResponseHelper::success($medicalRecord, 'Medical record retrieved'));
+    return ResponseHelper::success($medicalRecord, 'Medical record retrieved');
 }
 public function deleteMedicalRecord($id)
 {
     if (Auth::user()->role != '3') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $doctorId = Auth::user()->id;
@@ -376,19 +376,19 @@ public function deleteMedicalRecord($id)
     $medicalRecord = MedicalRecord::where('doctor_id', $doctorId)->find($id);
 
     if (!$medicalRecord) {
-        return response()->json(ResponseHelper::error([], null, 'Medical record not found', 404));
+        return ResponseHelper::error([], null, 'Medical record not found', 404);
     }
 
     $medicalRecord->delete();
 
-    return response()->json(ResponseHelper::success([], 'Medical record deleted'));
+    return ResponseHelper::success([], 'Medical record deleted');
 }
 
 
 public function addAppointment(Request $request)
 {
     if (Auth::user()->role != '2') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $validator = Validator::make($request->all(), [
@@ -400,13 +400,13 @@ public function addAppointment(Request $request)
     ]);
 
     if ($validator->fails()) {
-        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
     $doctor = User::find($request->doctor_id);
 
     if (!$doctor) {
-        return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+        return ResponseHelper::error([], null, 'Doctor not found', 404);
     }
 
     $reservedTime = Carbon::parse($request->reserved_time);
@@ -439,7 +439,6 @@ public function addAppointment(Request $request)
         return ResponseHelper::error([], null, 'Appointment already exists at this time', 422);
     }
 
-    //Check if there is an appointment in the same time slot within the last 7 days
     $latestAppointments = Appointment::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('reserved_time', $request->reserved_time)
@@ -447,7 +446,7 @@ public function addAppointment(Request $request)
         ->get();
 
     if ($latestAppointments->isNotEmpty()) {
-        return response()->json(ResponseHelper::error([], null, 'Another appointment exists within the same time slot in the last 7 days', 422));
+        return ResponseHelper::error([], null, 'Another appointment exists within the same time slot in the last 7 days', 422);
     }
 
     $appointment = Appointment::create([
@@ -457,12 +456,12 @@ public function addAppointment(Request $request)
         'date' => $date,
     ]);
 
-    return response()->json(ResponseHelper::created($appointment, 'Appointment created'));
+    return ResponseHelper::created($appointment, 'Appointment created');
 }
 public function updateAppointment(Request $request, $id)
 {
     if (Auth::user()->role != '2') {
-        return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
 
     $validator = Validator::make($request->all(), [
@@ -474,13 +473,13 @@ public function updateAppointment(Request $request, $id)
     ]);
 
     if ($validator->fails()) {
-        return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
     $doctor = User::find($request->doctor_id);
 
     if (!$doctor) {
-        return response()->json(ResponseHelper::error([], null, 'Doctor not found', 404));
+        return ResponseHelper::error([], null, 'Doctor not found', 404);
     }
 
     $reserved_time = Carbon::parse($request->reserved_time)->format('H:i');
@@ -492,7 +491,7 @@ public function updateAppointment(Request $request, $id)
         ->first();
 
     if (!$workingHours) {
-        return response()->json(ResponseHelper::error([], null, 'Invalid appointment', 422));
+        return ResponseHelper::error([], null, 'Invalid appointment', 422);
     }
 
     $existingAppointment = Appointment::where('doctor_id', $doctor->id)
@@ -502,13 +501,13 @@ public function updateAppointment(Request $request, $id)
         ->first();
 
     if ($existingAppointment) {
-        return response()->json(ResponseHelper::error([], null, 'Appointment already exists at this time', 422));
+        return ResponseHelper::error([], null, 'Appointment already exists at this time', 422);
     }
 
     $appointment = Appointment::find($id);
 
     if (!$appointment) {
-        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+        return ResponseHelper::error([], null, 'Appointment not found', 404);
     }
 
     $appointment->doctor_id = $doctor->id;
@@ -546,7 +545,7 @@ public function getAppointmentById($id)
     $appointment = Appointment::find($id);
 
     if (!$appointment) {
-        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+        return ResponseHelper::error([], null, 'Appointment not found', 404);
     }
 
     return response()->json([
@@ -558,7 +557,7 @@ public function deleteAppointment($id)
     $appointment = Appointment::find($id);
 
     if (!$appointment) {
-        return response()->json(ResponseHelper::error([], null, 'Appointment not found', 404));
+        return ResponseHelper::error([], null, 'Appointment not found', 404);
     }
 
     $appointment->delete();

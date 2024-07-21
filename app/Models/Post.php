@@ -35,4 +35,13 @@ class Post extends Model
             }
         );
     }
+
+    protected function isLiked(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Like::query()->where('user_id', auth()->id())->where('post_id', $this['id'])->exists();
+            }
+        );
+    }
 }

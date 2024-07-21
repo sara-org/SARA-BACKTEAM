@@ -24,7 +24,7 @@ class EmployeeController extends Controller
     public function addEmployee(Request $request)
     {
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
@@ -40,19 +40,19 @@ class EmployeeController extends Controller
 
 
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
         $data=$request->all();
         $data['is_verified']=true;
         $employee = Employee::create($data);
 
-        return response()->json(ResponseHelper::created($employee, 'Employee created'));
+        return ResponseHelper::created($employee, 'Employee created');
     }
 
     public function updateEmployee(Request $request, $employee_id)
     {
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $validator = Validator::make($request->all(), [
             'age' => ['required', 'integer'],
@@ -65,60 +65,60 @@ class EmployeeController extends Controller
             ],
         ]);
         if ($validator->fails()) {
-            return response()->json(ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422));
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
         }
         $employee = Employee::find($employee_id);
 
         if (!$employee) {
-            return response()->json(ResponseHelper::error([], null, 'Employee not found', 404));
+            return ResponseHelper::error([], null, 'Employee not found', 404);
         }
 
         $employee->update($request->all());
 
-        return response()->json(ResponseHelper::updated($employee, 'Employee updated'));
+        return ResponseHelper::updated($employee, 'Employee updated');
     }
     public function getAllEmployees()
     {
 
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
 
         $employees = Employee::with('user')->where('is_verified',request('is_verified')?? true)->get();
 
-        return response()->json(ResponseHelper::success($employees, 'Employees retrieved'));
+        return ResponseHelper::success($employees, 'Employees retrieved');
     }
 
     public function getEmployee($employee_id)
     {
 
         if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $employee = Employee::with('user')->find($employee_id);
 
         if (!$employee) {
-            return response()->json(ResponseHelper::error([], null, 'Employee not found', 404));
+            return ResponseHelper::error([], null, 'Employee not found', 404);
         }
 
-        return response()->json(ResponseHelper::success($employee, 'Employee retrieved'));
+        return ResponseHelper::success($employee, 'Employee retrieved');
     }
 
     public function deleteEmployee($employee_id)
     {
 
       if (Auth::user()->role != '2') {
-            return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         $employee = Employee::find($employee_id);
 
         if (!$employee) {
-            return response()->json(ResponseHelper::error([], null, 'Employee not found', 404));
+            return ResponseHelper::error([], null, 'Employee not found', 404);
         }
 
         $employee->delete();
 
-        return response()->json(ResponseHelper::success([], 'Employee deleted'));
+        return ResponseHelper::success([], 'Employee deleted');
     }
     public function reqSponcership(Request $request)
 {
