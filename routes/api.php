@@ -167,33 +167,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/doctor/working-hours/delete', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
-    //<----->
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
     Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
     Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
     Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
-    //requests
-    Route::post('/user/request/add', [RequestController::class, 'addRequest']);
-    Route::post('/user/request/update/{id}', [RequestController::class, 'updateRequest']);
-    Route::get('/user/request/get/{id}', [RequestController::class, 'getRequest']);
-    Route::get('/user/requests', [RequestController::class, 'getAllRequests']);
-    Route::delete('/user/request/delete/{id}', [RequestController::class, 'deleteRequest']);
-    //empReq
-    Route::post('/user/emprequest/add', [RequestController::class, 'addEmpreq']);
-    Route::post('/user/emprequest/update/{id}', [RequestController::class, 'updateEmpReq']);
-   //--------//
-    Route::post('/user/emprequest/updatestatus/{id}', [RequestController::class, 'updateEmpReqStatus']);
-    Route::get('/user/emprequest/get/{id}', [RequestController::class, 'getEmpreq']);
-    Route::get('/user/emprequests', [RequestController::class, 'getAllEmpreqs']);
-    Route::delete('/user/emprequest/delete/{id}', [RequestController::class, 'deleteEmpreq']);
-    //-------// docreq
-    Route::post('/user/docrequest/add', [RequestController::class, 'addDocreq']);
-    Route::post('/user/docrequest/update/{id}', [RequestController::class, 'updateDocReq']);
-    Route::post('/user/docrequest/updatestatus/{id}', [RequestController::class, 'updateDocReqStatus']);
-    Route::get('/user/docrequest/get/{id}', [RequestController::class, 'getDocreq']);
-    Route::get('/user/docrequests', [RequestController::class, 'getAllDocreqs']);
-    Route::delete('/user/docrequest/delete/{id}', [RequestController::class, 'deleteDocreq']);
     // sessions
     Route::post('/user/session/add', [SessionController::class, 'addSession']);
     Route::post('/user/session/update/{id}', [SessionController::class, 'updateSession']);

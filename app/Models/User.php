@@ -97,10 +97,6 @@ public function userEmergencies()
     {
         return $this->hasMany(UserEmr::class);
     }
-    public function requests()
-    {
-        return $this->hasMany(Req::class, 'request_id');
-    }
     public function posts()
     {
         return $this->hasMany(Post::class);
