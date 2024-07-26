@@ -88,7 +88,17 @@ class EmployeeController extends Controller
 
         return ResponseHelper::success($employees, 'Employees retrieved');
     }
+    public function getAllEmpReq()
+    {
 
+        if (Auth::user()->role != '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+
+        $employees = Employee::with('user')->where('is_verified',request('is_verified')?? false)->get();
+
+        return ResponseHelper::success($employees, 'Employees requests retrieved');
+    }
     public function getEmployee($employee_id)
     {
 

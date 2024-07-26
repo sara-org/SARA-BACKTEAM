@@ -89,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/employee/update/{employee_id}', [EmployeeController::class, 'updateEmployee']);
    Route::get('/user/employee/get/{employee_id}', [EmployeeController::class, 'getEmployee']);
    Route::get('/user/employees/getall', [EmployeeController::class, 'getAllEmployees']);
+   Route::get('/user/employees_requests/getall', [EmployeeController::class, 'getAllEmpReq']);
    Route::delete('/user/employee/delete/{employee_id}', [EmployeeController::class, 'deleteEmployee']);
    // feedings
    Route::post('/user/employee/feeding/add', [EmployeeController::class, 'addFeeding']);
@@ -163,6 +164,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
     Route::post('/user/doctor/working-hours/update', [DoctorController::class, 'updateWorkingHours']);
     Route::get('/user/doctor/working-hours/get', [DoctorController::class, 'getWorkingHours']);
+    Route::get('/user/doctor/hoursnotreserved/get', [DoctorController::class, 'getNotReservedHours']);
+    Route::get('/user/doctor/hoursreserved/get', [DoctorController::class, 'getReservedHours']);
     Route::get('/user/doctor/working-days/get', [DoctorController::class, 'getWorkingDays']);
     Route::delete('/user/doctor/working-hours/delete', [DoctorController::class, 'deleteWorkingHours']);
     // appointments
