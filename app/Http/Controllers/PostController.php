@@ -91,7 +91,9 @@ class PostController extends Controller
     {
         try {
             $posts = Post::with('likes','comments')->get();
-
+            $posts->each(function ($post) {
+                $post['is_liked'] = $post->is_liked;
+            });
             return ResponseHelper::success($posts, 'Posts retrieved successfully');
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve posts', 500);
