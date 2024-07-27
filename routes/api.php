@@ -181,6 +181,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/session/get/{id}', [SessionController::class, 'getSessionById']);
     Route::get('/user/sessions', [SessionController::class, 'getAllSessions']);
     Route::delete('/user/session/delete/{id}', [SessionController::class, 'deleteSession']);
+    // user_sessions
+    Route::post('/user/user_session/add', [SessionController::class, 'addUserToSession']);
+    Route::get('/user/user_session/get/{id}', [SessionController::class, 'getUserSessionById']);
+    Route::delete('/user/user_session/delete/{id}', [SessionController::class, 'deleteUserSession']);
+    Route::get('/user/user_sessions/all', [SessionController::class, 'getAllUserSessions']);
 });
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);

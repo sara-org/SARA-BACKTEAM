@@ -97,6 +97,11 @@ public function userEmergencies()
     {
         return $this->hasMany(UserEmr::class);
     }
+
+    public function userSessions()
+    {
+        return $this->hasMany(UserSession::class);
+    }
     public function posts()
     {
         return $this->hasMany(Post::class);
@@ -116,9 +121,5 @@ public function userEmergencies()
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
-    }
-    public function sessions()
-    {
-        return $this->hasMany(Session::class);
     }
 }

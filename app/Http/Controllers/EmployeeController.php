@@ -282,7 +282,7 @@ public function getUserSponcerships($user_id)
 
         $sponcerships = Sponcership::where('user_id', $user_id)
             ->where('spon_status', 1)
-            ->with('animal:id,name')
+            ->with('animal')
             ->get();
 
         return ResponseHelper::success($sponcerships, 'User sponsorships retrieved successfully');
@@ -419,11 +419,10 @@ public function getUserAdoptions($user_id)
             if ($loggedInUser->id != $user_id && $loggedInUser->role != 2) {
                 return ResponseHelper::error([], null, 'Unauthorized', 401);
             }
-        $adoptions = Adoption::where('user_id', $user_id)
+            $adoptions = Adoption::where('user_id', $user_id)
             ->where('adop_status', 1)
-            ->with('animal:id,name')
+            ->with('animal')
             ->get();
-
         return ResponseHelper::success($adoptions, 'User adoptions retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User not found', 404);

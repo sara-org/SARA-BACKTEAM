@@ -16,6 +16,7 @@ class PostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|string',
+            'photo' => ['nullable','string'],
         ]);
 
         if (Auth::user()->role != '2') {
@@ -27,6 +28,7 @@ class PostController extends Controller
 
         $postData = [
             'text' => $request->input('text'),
+            'photo' => $request->input('photo'),
             'user_id' => Auth::user()->id,
         ];
 
@@ -39,6 +41,7 @@ class PostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|string',
+            'photo' => ['nullable','string'],
         ]);
 
   if (Auth::user()->role != '2') {
@@ -51,6 +54,7 @@ class PostController extends Controller
         try {
             $post = Post::findOrFail($post_id);
             $post->text = $request->input('text');
+            $post->photo = $request->input('photo');
             $post->save();
 
             return ResponseHelper::success($post, 'Post updated successfully');

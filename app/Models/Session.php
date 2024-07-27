@@ -12,8 +12,8 @@ class Session extends Model
     protected $fillable = ['title', 'num_of_attendees', 'date','time'];
 
 
-    public function user()
+    public function userSessions()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(UserSession::class);
     }
 }

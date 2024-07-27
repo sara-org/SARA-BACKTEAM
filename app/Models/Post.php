@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Post extends Model
 {
-    protected $fillable = [ 'text' ,'user_id'];
+    protected $fillable = [ 'text' ,'photo','user_id'];
 
     protected $append = [
         'is_owner'
