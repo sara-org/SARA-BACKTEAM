@@ -177,13 +177,10 @@ public function addUserToSession(Request $request)
 public function getUserSessionById($user_session_id)
 {
     try {
-        $authenticated_user_id = Auth::id();
 
-        $userSession = UserSession::findOrFail($user_session_id);
+        $userSession = UserSession::with('user','session')->findOrFail($user_session_id);
 
-        if ($userSession->user_id !== $authenticated_user_id) {
-             return ResponseHelper::error([], null, 'Unauthorized', 401);}
-
+        $userSession['is_Added'] = $userSession['is_Added'];
         return ResponseHelper::success($userSession, 'User session retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User session not found', 404);
@@ -191,13 +188,40 @@ public function getUserSessionById($user_session_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-public function getAllUserSessions()
+public function getUserSessions()
 {
     try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
         $user_id = Auth::id();
-        $userSessions = UserSession::where('user_id', $user_id)->get();
+        $userSessions = UserSession::with('session','user')->where('user_id', $user_id)->get();
+
+        $userSessions->each(function ($userSession) {
+            $userSession['is_Added'] = $userSession->is_Added;
+        });
 
         return ResponseHelper::success($userSessions, 'All user sessions retrieved successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+
+public function getAllUsersSessions()
+{
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $userSessions = UserSession::with('user', 'session')->get();
+
+        $userSessions->each(function ($userSession) {
+            $userSession['is_Added'] = $userSession->is_Added;
+        });
+
+        return ResponseHelper::success($userSessions, 'All Users Sessions retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
