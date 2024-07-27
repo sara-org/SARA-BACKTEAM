@@ -177,11 +177,13 @@ public function addUserToSession(Request $request)
 public function getUserSessionById($user_session_id)
 {
     try {
-        if (Auth::user()->role !== '2') {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
+        $authenticated_user_id = Auth::id();
 
         $userSession = UserSession::findOrFail($user_session_id);
+
+        if ($userSession->user_id !== $authenticated_user_id) {
+             return ResponseHelper::error([], null, 'Unauthorized', 401);}
+
         return ResponseHelper::success($userSession, 'User session retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User session not found', 404);
