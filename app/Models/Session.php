@@ -30,5 +30,5 @@ class Session extends Model
         );
     }
 
-    
+
 }

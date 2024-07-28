@@ -97,9 +97,6 @@ class SessionController extends Controller
 public function getSessionById($session_id)
 {
     try {
-        // if (Auth::user()->role !== '2') {
-        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
-        // }
         $session = session::findOrFail($session_id);
         return ResponseHelper::success($session, 'session retrieved successfully');
     } catch (ModelNotFoundException $exception) {
@@ -111,9 +108,6 @@ public function getSessionById($session_id)
 public function getAllSessions()
 {
     try {
-        // if (Auth::user()->role !== '2') {
-        //     return ResponseHelper::error([], null, 'Unauthorized', 401);
-        // }
         $sessions = Session::all();
         return ResponseHelper::success($sessions, 'All sessions retrieved successfully');
     } catch (Throwable $th) {
