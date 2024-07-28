@@ -10,9 +10,9 @@ class Session extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'num_of_attendees', 'date','time'];
-    protected $append = [
-        'is_Added'
+    protected $fillable = ['title','num_of_attendees','date','time'];
+    protected $appends = [
+        'is_added'
     ];
 
     public function userSessions()
@@ -25,8 +25,10 @@ class Session extends Model
     {
         return Attribute::make(
             get: function () {
-                return (bool) (auth()->user()->id == $this['user_id']);
+                return ( $this->userSessions()->where('user_id',auth()->id())->exists());
             }
         );
     }
+
+    
 }
