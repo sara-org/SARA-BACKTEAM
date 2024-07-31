@@ -199,3 +199,4 @@ Route::post('/email/requestverify', [UserController::class, 'requestVerifyAccoun
 Route::post('/email/verify', [UserController::class, 'verifyAccount']);
 
 
+// asali is nerd
