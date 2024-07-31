@@ -16,7 +16,7 @@ use Carbon\Carbon;
 
 class EmergencyController extends Controller
 {
-    public function addEmergency(Request $request)
+    public function reqEmergency(Request $request)
     {
         try {
             if (!Auth::check()) {
@@ -40,71 +40,84 @@ class EmergencyController extends Controller
                 'photo' => $request->input('photo'),
                 'user_id' => Auth::id(),
                 'emr_date' => Carbon::now()->toDateString(),
+                'status' => 0,
             ];
 
             $emergency = Emergency::create($emergencyData);
 
-            return ResponseHelper::created($emergency, 'Emergency added successfully');
+            return ResponseHelper::created($emergency, 'Emergency request added successfully');
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
     }
+    public function acceptEmergency($emergencyId)
+{
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $user = Auth::user();
+        if ($user->role !== '4') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $emergency = Emergency::find($emergencyId);
 
-    public function updateEmergency(Request $request, $emergency_id)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'address' => 'nullable|string',
-                'description' => 'nullable|string',
-                'contact' => 'nullable|string',
-                'photo' => 'nullable|string',
-            ]);
-
-            if ($validator->fails()) {
-                throw ValidationException::withMessages($validator->errors()->toArray());
-            }
-
-            $user = auth()->user();
-            $emergency = Emergency::findOrFail($emergency_id);
-
-            if ($user->id !== $emergency->user_id) {
-                return ResponseHelper::error([], null, 'Unauthorized', 401);
-            }
-
-            $emergencyData = [];
-
-            if ($request->has('address')) {
-                $emergencyData['address'] = $request->input('address');
-            }
-            if ($request->has('description')) {
-                $emergencyData['description'] = $request->input('description');
-            }
-            if ($request->has('contact')) {
-                $emergencyData['contact'] = $request->input('contact');
-            }
-            if ($request->has('photo')) {
-                $emergencyData['photo'] = $request->input('photo');
-            }
-            if ($request->has('emr_date')) {
-                $emergencyData['emr_date'] = Carbon::parse($request->input('emr_date'))->toDateString();
-            }
-                $emergency->update($emergencyData);
-
-            return ResponseHelper::success($emergency, 'Emergency updated successfully');
-        } catch (ModelNotFoundException $exception) {
+        if (!$emergency) {
             return ResponseHelper::error([], null, 'Emergency not found', 404);
-        } catch (Throwable $th) {
-            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-        }
+        $emergency->status = 1;
+        $emergency->save();
 
-public function getEmergencyById($emergency_id)
+        return ResponseHelper::success($emergency, 'Emergency accepted successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateEmergency(Request $request, $emergencyId)
 {
     try {
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
+        $emergency = Emergency::find($emergencyId);
+
+        if (!$emergency) {
+            return ResponseHelper::error([], null, 'Emergency not found', 404);
+        }
+
+        if ($emergency->user_id !== Auth::id() && Auth::user()->role !== '4') {
+            return ResponseHelper::error([], null, 'Unauthorized to update this emergency', 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'address' => 'required|string',
+            'description' => 'required|string',
+            'contact' => 'required|string',
+            'photo' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            throw ValidationException::withMessages($validator->errors()->toArray());
+        }
+
+        $emergency->address = $request->input('address');
+        $emergency->description = $request->input('description');
+        $emergency->contact = $request->input('contact');
+        $emergency->photo = $request->input('photo');
+        $emergency->save();
+
+        return ResponseHelper::success($emergency, 'Emergency updated successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function getEmergencyById($emergency_id)
+{
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $emergency = Emergency::where('id', $emergency_id)
             ->where('user_id', Auth::user()->id)
             ->firstOrFail();
@@ -123,7 +136,10 @@ public function getUserEmergencies($user_id)
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
+        $loggedInUser = Auth::user();
+        if ( $loggedInUser->id != $user_id && $loggedInUser->role !=  '4') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $emergencies = Emergency::where('user_id', $user_id)->get();
 
         return ResponseHelper::success($emergencies, 'User emergencies retrieved successfully');
@@ -132,16 +148,21 @@ public function getUserEmergencies($user_id)
     }
 }
 
-public function getAllEmergencies()
+public function getAllEmergencies(Request $request)
 {
+    $status = $request->input('status');
+
     try {
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
+        $user = Auth::user();
+        if ($user->role !== '4') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+        $emergencies = Emergency::where('status', $status)->get();
 
-        $emergencies = Emergency::all();
-
-        return ResponseHelper::success($emergencies, 'All emergencies retrieved successfully');
+        return ResponseHelper::success($emergencies, 'Emergencies with status '.$status.' retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
@@ -152,7 +173,10 @@ public function getEmergenciesByDate(Request $request)
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
+        $user = Auth::user();
+        if ($user->role !== '4') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
         $validator = Validator::make($request->all(), [
             'emr_date' => 'required|date',
         ]);
@@ -176,11 +200,11 @@ public function deleteEmergency($emergency_id)
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
         $emergency = Emergency::findOrFail($emergency_id);
 
-        if ($emergency->user_id !== Auth::user()->id) {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        if ($emergency->user_id !== Auth::id() && Auth::user()->role !== '4')
+        {
+            return ResponseHelper::error([], null, 'Unauthorized to update this emergency', 403);
         }
         $emergency->delete();
 
@@ -201,7 +225,7 @@ public function addUserEmergency(Request $request)
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|string',
+            'animal_status' => 'required|string',
             'date' => 'date',
             'emergency_id' => 'required|exists:emergencies,id',
         ]);
@@ -211,11 +235,11 @@ public function addUserEmergency(Request $request)
         }
 
         $date = Carbon::parse($request->input('date'));
-        $status = $request->input('status');
+        $animal_status = $request->input('animal_status');
         $emergencyId = $request->input('emergency_id');
 
         $userEmergency = UserEmr::firstOrCreate([
-            'status' => $status,
+            'animal_status' => $animal_status,
             'emergency_id' => $emergencyId,
         ], [
             'date' => $date,
@@ -241,7 +265,7 @@ public function updateUserEmergency(Request $request, $user_emergency_id)
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'nullable|string',
+            'animal_status' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -251,7 +275,7 @@ public function updateUserEmergency(Request $request, $user_emergency_id)
         $userEmergency = UserEmr::findOrFail($user_emergency_id);
 
         $userEmergency->update([
-            'status' => $request->input('status'),
+            'animal_status' => $request->input('animal_status'),
         ]);
 
         return ResponseHelper::updated($userEmergency, 'User emergency updated successfully');
@@ -269,7 +293,7 @@ public function getUserEmergencyById($user_emergency_id)
         if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        $userEmergency = UserEmr::findOrFail($user_emergency_id);
+        $userEmergency = UserEmr::with('emergency','user')->findOrFail($user_emergency_id);
         return ResponseHelper::success($userEmergency, 'User emergency retrieved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'User emergency not found', 404);

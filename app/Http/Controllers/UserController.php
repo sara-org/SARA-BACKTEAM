@@ -7,10 +7,7 @@ use Illuminate\Support\Facades\Password;
 use App\Helper\ResponseHelper;
 use App\Mail\JobApplicationApprovedEmail;
 use App\Models\User;
-use App\Models\Animal;
 use App\Models\Donation;
-use App\Models\Adoption;
-use App\Models\Sponcership;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Mail\SendCodeResetPassword;
@@ -22,7 +19,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\AuthenticationException;
 use App\Models\ResetCodePassword;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Mail;
@@ -81,9 +77,6 @@ class UserController extends Controller
         if ($request->has('email')) {
             if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
                 $user = $request->user();
-                // if($user->role==='4' && !$user->employee->is_verified){
-                //         return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
-                // }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
@@ -94,9 +87,6 @@ class UserController extends Controller
         } else {
             if (Auth::attempt(['name' => $credentials['name'], 'password' => $credentials['password']])) {
                 $user = $request->user();
-            //     if($user->role==='4' && !$user->employee->is_verified){
-            //         return ResponseHelper::error([], null, 'Your account does not verified yet.', 403);
-            // }
                 $tokenResult = $user->createToken('personal Access Token')->plainTextToken;
                 $data['user'] = $user;
                 $data["TokenType"] = 'Bearer';
@@ -279,7 +269,6 @@ class UserController extends Controller
             'message' => 'Your Email Is Verified!',
             'user' => $user,
             'TokenType' => 'Bearer',
-           // 'Token' => $tokenResult,
         ];
 
         return response()->json($data, Response::HTTP_OK);

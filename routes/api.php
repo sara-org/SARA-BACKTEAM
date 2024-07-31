@@ -13,7 +13,6 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CenterController;
-use App\Http\Controllers\RequestController;
 use App\Http\Controllers\SessionController;
 
 
@@ -119,7 +118,8 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
    Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
   // emergencies
-   Route::post('/user/emergency/add', [EmergencyController::class, 'addEmergency']);
+   Route::post('/user/emergency/req', [EmergencyController::class, 'reqEmergency']);
+   Route::post('/user/emergency/accept/{emergency_id}', [EmergencyController::class, 'acceptEmergency']);
    Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
    Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
    Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
@@ -127,12 +127,12 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/emergency/getuser/{user_id}', [EmergencyController::class, 'getUserEmergencies']);
    Route::delete('/user/emergency/delete/{emergency_id}', [EmergencyController::class, 'deleteEmergency']);
   //User Emergencies
-   Route::post('/user/useremergency/add', [EmergencyController::class, 'addUserEmergency']);
-   Route::post('/user/useremergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
-   Route::get('/user/useremergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
+   Route::post('/user/empemergency/add', [EmergencyController::class, 'addUserEmergency']);
+   Route::post('/user/empemergency/update/{user_emergency_id}', [EmergencyController::class, 'updateUserEmergency']);
+   Route::get('/user/empemergency/get/{user_emergency_id}', [EmergencyController::class, 'getUserEmergencyById']);
    Route::get('/user/empemergency/getall', [EmergencyController::class, 'getAllUserEmergencies']);
    Route::get('/user/empemergency/getallbydate', [EmergencyController::class, 'getUserEmergenciesByDate']);
-   Route::delete('/user/useremergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
+   Route::delete('/user/empemergency/delete/{user_emergency_id}', [EmergencyController::class, 'deleteUserEmergency']);
    // posts
    Route::post('/user/post/add', [PostController::class, 'addPost']);
    Route::get('/user/posts', [PostController::class, 'getAllPosts']);
@@ -189,6 +189,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/user_sessions/all', [SessionController::class, 'getAllUsersSessions']);
 
 });
+
 Route::post('/user/signup', [UserController::class, 'signUp']);
 Route::post('/user/signin', [UserController::class, 'login']);
 Route::post('/user/logout', [UserController::class, 'logout']);
@@ -198,5 +199,3 @@ Route::post('/password/reset', [UserController::class, 'userResetPassword']);
 Route::post('/email/requestverify', [UserController::class, 'requestVerifyAccount']);
 Route::post('/email/verify', [UserController::class, 'verifyAccount']);
 
-
-// asali is nerd

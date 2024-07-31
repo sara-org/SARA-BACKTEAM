@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('user_emergencies', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->enum('status', ['healthy', 'unhealthy', 'under treatment', 'passed', 'unavailable']);
+            $table->enum('animal_status', ['healthy', 'unhealthy', 'under treatment', 'passed', 'unavailable']);
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('emergency_id');
             $table->timestamps();

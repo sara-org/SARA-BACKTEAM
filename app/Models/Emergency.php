@@ -17,6 +17,7 @@ class Emergency extends Model
         'photo',
         'user_id',
         'emr_date',
+        'status',
        ];
        public function userEmergencies()
     {

@@ -8,7 +8,7 @@ class UserEmr extends Model
 {
     protected $table = 'user_emergencies';
     protected $fillable = [
-        'status',
+        'animal_status',
         'date',
         'user_id',
         'emergency_id'

@@ -169,8 +169,6 @@ class DoctorController extends Controller
                 'status' => 0,
             ];
         }
-
-
         WorkingHours::insert($workingHoursData);
         $response = [
             'data' => [
@@ -183,7 +181,6 @@ class DoctorController extends Controller
 
         return response()->json($response);
     }
-
 
     public function updateWorkingHours(Request $request)
     {
