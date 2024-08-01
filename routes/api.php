@@ -107,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::post('/user/doctor/medical-record/add', [DoctorController::class, 'addMedicalRecord']);
    Route::post('/user/doctor/medical-record/update/{id}', [DoctorController::class, 'updateMedicalRecord']);
    Route::get('/user/doctors/medical-records/get/{id}', [DoctorController::class,'getMedicalRecord']);
+   Route::get('/user/animals/medical-records/get/{id}', [DoctorController::class,'getMedicalRecordsForAnimal']);
    Route::get('/user/doctors/medical-records/all', [DoctorController::class,'getAllMedicalRecords']);
    Route::delete('/user/doctor/medical-record/delete/{id}', [DoctorController::class, 'deleteMedicalRecord']);
   // emergencies

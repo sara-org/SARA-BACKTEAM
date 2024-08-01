@@ -381,7 +381,23 @@ public function getAllMedicalRecords()
 
     return ResponseHelper::success($medicalRecords, 'All Medical Records retrieved');
 }
+public function getMedicalRecordsForAnimal(Request $request, $animalId)
+{
+    if (Auth::user()->role != '3') {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
+    }
+    $validator = Validator::make(['animal_id' => $animalId], [
+        'animal_id' => ['required', 'integer', Rule::exists('animals', 'id')],
+    ]);
 
+    if ($validator->fails()) {
+        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
+    }
+
+    $medicalRecords = MedicalRecord::where('animal_id', $animalId)->get();
+
+    return ResponseHelper::success($medicalRecords, 'Medical records retrieved successfully');
+}
 public function getMedicalRecord($id)
 {
     if (Auth::user()->role != '3') {
