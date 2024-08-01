@@ -19,7 +19,7 @@ class DepartmentController extends Controller
         ]);
 
         if ($validator->fails())
-        
+
         {
             return response()->json(
             [
@@ -30,21 +30,21 @@ class DepartmentController extends Controller
         }
 
         $user = Auth::user();
-    
+
         if ($user->role !== '4' && $user->role !== '2') {
-       
-        
+
+
             return response()->json(
             [
                 'status' => false,
                 'message' => 'Unauthorized access',
             ], 401);
         }
-    
+
         $department = Department::create([
             'name' => $request->name,
             'number' => $request->number,
-        ]);   
+        ]);
         return response()->json([
             'status' => true,
             'message' => 'Deparment created successfully',
@@ -58,8 +58,8 @@ class DepartmentController extends Controller
             'name' => 'required',
             'number' => 'required',
         ]);
-    
-        if ($validator->fails()) 
+
+        if ($validator->fails())
         {
             return response()->json([
                 'status' => false,
@@ -67,9 +67,9 @@ class DepartmentController extends Controller
                 'errors' => $validator->errors(),
             ], 400);
         }
-    
+
         $user = Auth::user();
-    
+
         if ($user->role !== '4' && $user->role !== '2')
         {
             return response()->json([
@@ -77,58 +77,74 @@ class DepartmentController extends Controller
                 'message' => 'Unauthorized access',
             ], 401);
         }
-    
+
         $department = Department::find($id);
-    
+
         if (!$department) {
             return response()->json([
                 'status' => false,
                 'message' => 'Department not found',
             ], 404);
         }
-    
+
         $department->name = $request->name;
         $department->number = $request->number;
-       
+
         $department->save();
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Department updated successfully',
             'data' => $department,
         ], 200);
     }
-   
+    public function getDepartmentById($id)
+    {
+        $department = Department::find($id);
+
+        if (!$department) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Department not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Department retrieved successfully',
+            'data' => $department,
+        ], 200);
+    }
     public function getAllDepartments()
     {
             $departments = Department::all();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Departments Retrieved Successfully',
                 'data' => $departments
             ], 200);
         }
-       
-    
+
+
     public function deleteDepartment($id)
     {
         {
             $user = Auth::user();
-        
+
             if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
                 return ResponseHelper::success([],null,'Unauthorized',401);
-    
+
             }
-        
+
             $department=Department::find($id);
-    
+
             if (!$department) {
                 return ResponseHelper::success([],null,'Department not found',200);
             }
                     $department->delete();
         return ResponseHelper::success([],null,'Department deleted successfully',200);
-         
+
         }
     }
 }

@@ -85,7 +85,7 @@ public function updateEmergency(Request $request, $emergencyId)
         if (!$emergency) {
             return ResponseHelper::error([], null, 'Emergency not found', 404);
         }
-        if ($emergency->status !== '1') {
+        if ($emergency->status !== 1) {
             return ResponseHelper::error([], null, 'Unauthorized: Emergency status is not valid', 403);
         }
         if ($emergency->user_id !== Auth::id() && Auth::user()->role !== '4') {
@@ -203,13 +203,14 @@ public function deleteEmergency($emergency_id)
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $emergency = Emergency::findOrFail($emergency_id);
-        if ($emergency->status !== '1') {
+        if ($emergency->status !== 1) {
             return ResponseHelper::error([], null, 'Unauthorized: Emergency status is not valid', 403);
         }
         if ($emergency->user_id !== Auth::id() && Auth::user()->role !== '4')
         {
-            return ResponseHelper::error([], null, 'Unauthorized to update this emergency', 403);
+            return ResponseHelper::error([], null, 'Unauthorized to delete this emergency', 403);
         }
+
         $emergency->delete();
 
         return ResponseHelper::success([], 'Emergency deleted successfully');

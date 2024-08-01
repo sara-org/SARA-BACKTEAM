@@ -275,45 +275,30 @@ class UserController extends Controller
     }
 
     public function changeRole(Request $request, $user_id)
-{
+    {
+        try {
+            if (!auth()->check()) {
+                return ResponseHelper::error([], null, 'Unauthorized', 401);
+            }
 
-    try {
-        if (!auth()->check()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized',
-            ], 401);
+            if (Auth::user()->role !== '2') {
+                return ResponseHelper::error([], null, 'Only the admin can change roles', 403);
+            }
+
+            $user = User::find($user_id);
+
+            if (!$user) {
+                return ResponseHelper::error([], null, 'User not found', 404);
+            }
+
+            $user->role = $request->new_role;
+            $user->save();
+
+            return ResponseHelper::success($user, null, 'User Role Updated Successfully', 200);
+        } catch (\Throwable $th) {
+            return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-        if (Auth::user()->role !== '2') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Only the admin can change roles',
-            ], 403);
-        }
-
-        $user = User::find($user_id);
-
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found',
-            ], 404);
-        }
-
-        $user->role = $request->new_role;
-        $user->save();
-        return response()->json([
-            'status' => true,
-            'message' => 'User Role Updated Successfully',
-            'data' => $user
-        ], 200);
-    } catch (\Throwable $th) {
-        return response()->json([
-            'status' => false,
-            'message' => $th->getMessage()
-        ], 500);
     }
-}
 
 public function chargeWallet(Request $request, $user_id)
 {
@@ -362,7 +347,7 @@ public function getAllWallets()
     $walletData = [];
 
     foreach ($users as $user) {
-        if ($user->id !== Auth::user()->id && $user->role !== 2) {
+        if ($user->id !== Auth::user()->id && $user->role !== '2') {
             $walletData[] = [
                 'user_id' => $user->id,
                 'wallet' => $user->wallet,
@@ -498,58 +483,67 @@ public function deleteDonation($donation_id)
 }
 public function empReq(Request $request)
 {
-    if (!Auth::check()) {
-        return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $loggedInUser = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'age' => ['required', 'integer'],
+            'job_title' => ['required', 'string'],
+            'start_time' => ['required', 'date_format:H:i:s'],
+            'end_time' => [
+                'required',
+                'date_format:H:i:s',
+                Rule::notIn([$request->input('start_time')])
+            ],
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseHelper::error([], null, $validator->errors()->all(), 422);
+        }
+
+        if ($loggedInUser->role !== '1') {
+            return ResponseHelper::error([], null, 'You cannot make this request.', 400);
+        }
+
+        $employeeData = $request->only(['age', 'job_title', 'start_time', 'end_time']);
+
+        $loggedInUser->employee()->updateOrCreate([], $employeeData);
+        $loggedInUser->load('employee');
+
+        return ResponseHelper::success($loggedInUser, null, 'Employee Request Processed Successfully', 201);
+    } catch (\Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
-
-    $loggedInUser = Auth::user();
-    $validator = Validator::make($request->all(), [
-        'age' => ['required', 'integer'],
-        'job_title' => ['required', 'string'],
-        'start_time' => ['required', 'date_format:H:i:s'],
-        'end_time' => [
-            'required',
-            'date_format:H:i:s',
-            Rule::notIn([$request->input('start_time')])
-        ],
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors()->all(), Response::HTTP_UNPROCESSABLE_ENTITY);
-    }
-
-    if ($loggedInUser->role !== '1') {
-        return ResponseHelper::error([], null, 'You cannot make this request.', 400);
-    }
-
-    $employeeData = $request->only(['age', 'job_title', 'start_time', 'end_time']);
-
-    $loggedInUser->employee()->updateOrCreate([], $employeeData);
-    $loggedInUser->load('employee');
-
-    return response()->json($loggedInUser, Response::HTTP_CREATED);
 }
 public function approveUser(User $user)
 {
-    if (Auth::user()->role !== '2') {
-        return ResponseHelper::error([], null, 'Unauthorized', 401);
-    }
+    try {
+        if (Auth::user()->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
 
-    if ($user->employee) {
-        $user->employee->update([
-            'is_verified' => true,
-        ]);
-        $user->update([
-            'role' => '4'
-        ]);
-    }
+        if ($user->employee) {
+            $user->employee->update([
+                'is_verified' => true,
+            ]);
+            $user->update([
+                'role' => '4'
+            ]);
+        }
 
-    $emailSent = Mail::to($user->email)->send(new JobApplicationApprovedEmail($user));
+        $emailSent = Mail::to($user->email)->send(new JobApplicationApprovedEmail($user));
 
-    if ($emailSent) {
-        return response()->json(['message' => 'Email has been sent successfully'], Response::HTTP_OK);
-    } else {
-        return response()->json(['message' => 'Failed to send email'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if ($emailSent) {
+            return ResponseHelper::success([], null, 'Email has been sent successfully', 200);
+        } else {
+            return ResponseHelper::error([], null, 'Failed to send email', 500);
+        }
+    } catch (\Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
 }

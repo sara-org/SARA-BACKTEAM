@@ -27,20 +27,17 @@ Route::middleware('auth:sanctum')->group(function () {
     {
         return $request->user();
     });
-
-    // Admins
+    // Admin Routes
     Route::post('/user/change-role/{user_id}', [UserController::class, 'changeRole']);
     Route::post('/user/update/{user_id}', [UserController::class, 'updateUser']);
     Route::get('/users/all', [UserController::class, 'getAllUsers']);
     Route::post('/user/empreq', [UserController::class, 'empReq']);
     Route::put('/user/approvereq/{user}', [UserController::class, 'approveUser']);
-
     // wallet
     Route::post('/user/wallet/charge/{user_id}', [UserController::class, 'chargeWallet']);
     Route::get('/user/wallet/get/{user_id}', [UserController::class, 'getWallet']);
     Route::get('/user/wallets', [UserController::class, 'getAllWallets']);
     Route::delete('/user/wallet/remove/{user_id}', [UserController::class, 'removeWallet']);
-
      // Animals
     Route::post('/animal/add',[AnimalController::class,'addAnimal']);
     Route::post('/animal/update/{animal_id}',[AnimalController::class,'updateAnimal']);
@@ -48,25 +45,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/animal/get/{animal_id}',[AnimalController::class,'getAnimal']);
     Route::delete('/animal/delete/{animal_id}',[AnimalController::class,'deleteAnimal']);
     Route::get('/animal-types/getType/{id}',[AnimalTypeController::class,'getAnimalsByType']);
-
     // Animal Types
     Route::post('/animaltype/add',[AnimalTypeController::class,'addAnimalType']);
     Route::post('/animaltype/update/{animaltype_id}',[AnimalTypeController::class,'updateAnimalType']);
+    Route::post('/animaltype/get/{animaltype_id}',[AnimalTypeController::class,'getAnimalTypeById']);
     Route::get('/animaltypes/getall',[AnimalTypeController::class,'getAllAnimalsTypes']);
     Route::delete('/animaltype/delete/{animaltype_id}',[AnimalTypeController::class,'deleteAnimalType']);
-
     // Departments
     Route::post('/department/add',[DepartmentController::class,'addDepartment']);
     Route::post('/department/update/{department_id}',[DepartmentController::class,'updateDepartment']);
+    Route::post('/department/get/{department_id}',[DepartmentController::class,'getDepartmentById']);
     Route::get('/departments/getall',[DepartmentController::class,'getAllDepartments']);
     Route::delete('/department/delete/{department_id}',[DepartmentController::class,'deleteDepartment']);
-
     // Donations
    Route::post('/user/donation/add', [UserController::class, 'addDonation']);
    Route::post('/user/donation/update/{donation_id}', [UserController::class, 'updateDonation']);
    Route::get('/user/donations/user/{user_id}', [UserController::class, 'getUserDonations']);
    Route::delete('/user/donation/delete/{donation_id}', [UserController::class, 'deleteDonation']);
-
     // Sponcerships
    Route::post('/user/sponcership/req', [EmployeeController::class, 'reqSponcership']);
    Route::post('/user/sponcership/updatespon/{sponcership_id}', [EmployeeController::class, 'ApproveSponcership']);
@@ -74,7 +69,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::delete('/user/sponcership/delete/{sponcership_id}', [EmployeeController::class, 'deleteSponcership']);
    Route::get('/user/sponcerships/pendingsponcership/getall', [EmployeeController::class, 'getPendingSponcerships']);
    Route::get('/user/sponcerships/acceptingsponcership/getall', [EmployeeController::class, 'getAcceptingSponcerships']);
-
    // Adoptions
    Route::post('/user/adoption/Req', [EmployeeController::class, 'ReqAdoption']);
    Route::post('/user/adoption/updatereq/{adoption_id}', [EmployeeController::class, 'ApproveAdoption']);
@@ -82,7 +76,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::delete('/user/adoption/delete/{adoption_id}', [EmployeeController::class, 'deleteAdoption']);
    Route::get('/user/adoptions/pendingadoption/getall', [EmployeeController::class, 'getPendingAdoptions']);
    Route::get('/user/adoptions/acceptingadoption/getall', [EmployeeController::class, 'getAcceptingAdoptions']);
-
    // employees
    Route::post('/user/employee/add', [EmployeeController::class, 'addEmployee']);
    Route::post('/user/employee/update/{employee_id}', [EmployeeController::class, 'updateEmployee']);
@@ -104,7 +97,6 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::get('/user/employee/vaccinations/all', [EmployeeController::class, 'getAllVaccinations']);
    Route::delete('/user/vaccination/delete/{vaccination_id}', [EmployeeController::class, 'deleteVaccination']);
    Route::get('/user/unVac-departments', [EmployeeController::class, 'getUnVacDepartments']);
-
    //doctors
    Route::post('/user/doctor/add', [DoctorController::class, 'addDoctor']);
    Route::post('/user/doctor/update/{doctor_id}', [DoctorController::class, 'updateDoctor']);
