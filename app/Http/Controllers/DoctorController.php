@@ -224,57 +224,55 @@ class DoctorController extends Controller
     }
 
 
-    public function getWorkingHours(Request $request)
+    public function getWorkingHours(Request $request, $doctorId)
+{
+    $user = Auth::user();
+    if ($user->role !== '2' && $user->id != $doctorId) {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
+    }
+
+    $doctor = User::where('id', $doctorId)->first();
+    return ResponseHelper::success($doctor->doctimes->toArray());
+}
+    public function getNotReservedHours(Request $request, $doctorId)
     {
         $user = Auth::user();
-        $doctorId = $request->input('doctor_id');
-        if ($user->role !== '2' && $user->id != $request->input('doctor_id'))
-    { return ResponseHelper::error(null, null, 'Unauthorized', 401);}
-        $doctor = User::where('id', $doctorId)->first();
-        return ResponseHelper::success($doctor->doctimes->toArray());
+
+        if ($user->role !== '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+
+        $doctor = User::find($doctorId);
+
+        if (!$doctor) {
+            return ResponseHelper::error(null, null, 'Doctor not found', 404);
+        }
+
+        $freeSlots = $doctor->doctimes()->where('status', 0)->get();
+
+        return ResponseHelper::success($freeSlots->toArray());
     }
-    public function getNotReservedHours(Request $request)
+    public function getReservedHours(Request $request, $doctorId)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+
+        $doctor = User::find($doctorId);
+
+        if (!$doctor) {
+            return ResponseHelper::error(null, null, 'Doctor not found', 404);
+        }
+
+        $reservedSlots = $doctor->doctimes()->where('status', 1)->get();
+
+        return ResponseHelper::success($reservedSlots->toArray());
+    }
+public function getWorkingDays(Request $request, $doctorId)
 {
     $user = Auth::user();
-    $doctorId = $request->input('doctor_id');
-
-    if ($user->role !== '2') {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
-
-    $doctor = User::find($doctorId);
-
-    if (!$doctor) {
-        return ResponseHelper::error(null, null, 'Doctor not found', 404);
-    }
-
-    $freeSlots = $doctor->doctimes()->where('status', 0)->get();
-
-    return ResponseHelper::success($freeSlots->toArray());
-}
-public function getReservedHours(Request $request)
-{
-    $user = Auth::user();
-    $doctorId = $request->input('doctor_id');
-
-    if ($user->role !== '2') {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
-
-    $doctor = User::find($doctorId);
-
-    if (!$doctor) {
-        return ResponseHelper::error(null, null, 'Doctor not found', 404);
-    }
-
-    $freeSlots = $doctor->doctimes()->where('status', 1)->get();
-
-    return ResponseHelper::success($freeSlots->toArray());
-}
-    public function getWorkingDays(Request $request)
-{
-    $user = Auth::user();
-    $doctorId = $request->input('doctor_id');
 
     if ($user->role !== '2' && $user->id != $doctorId) {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
