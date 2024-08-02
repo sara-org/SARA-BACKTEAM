@@ -201,8 +201,6 @@ public function deleteEmergency($emergency_id)
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
-
         $emergency = Emergency::findOrFail($emergency_id);
         if ($emergency->status !== 1) {
             return ResponseHelper::error([], null, 'Unauthorized: Emergency status is not valid', 403);
@@ -211,9 +209,7 @@ public function deleteEmergency($emergency_id)
         {
             return ResponseHelper::error([], null, 'Unauthorized to delete this emergency', 403);
         }
-
         $emergency->delete();
-
         return ResponseHelper::success([], 'Emergency deleted successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Emergency not found', 404);
