@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
     Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
+    Route::get('/user/appointments/getreservedapp', [DoctorController::class, 'getReservedAppointments']);
     Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
     Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
     // sessions

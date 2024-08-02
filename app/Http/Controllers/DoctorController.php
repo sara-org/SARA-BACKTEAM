@@ -228,12 +228,11 @@ class DoctorController extends Controller
 {
     $user = Auth::user();
     if ($user->role !== '2' && $user->id != $doctorId) {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
-
+    return ResponseHelper::error(null, null, 'Unauthorized', 401);}
     $doctor = User::where('id', $doctorId)->first();
-    return ResponseHelper::success($doctor->doctimes->toArray());
-}
+    return ResponseHelper::success($doctor->doctimes->toArray());}
+
+
     public function getNotReservedHours(Request $request, $doctorId)
     {
         $user = Auth::user();
@@ -306,6 +305,7 @@ public function deleteWorkingHours(Request $request)
 
     return ResponseHelper::success(['doctor_id' => $doctorId, 'day' => $day], 'Working hours deleted successfully');
 }
+
     public function addMedicalRecord(Request $request)
     {
         if (Auth::user()->role != '3') {
@@ -599,6 +599,25 @@ public function getAppointmentById($id)
         'appointment' => $appointment,
     ]);
 }
+
+public function getReservedAppointments(Request $request)
+{
+    if (Auth::user()->role != '2') {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
+    }
+
+    $date = Carbon::parse($request->date);
+
+    $startOfDay = $date->copy()->startOfDay();
+    $endOfDay = $date->copy()->endOfDay();
+
+    $reservedAppointments = Appointment::where('date', '>=', $startOfDay)
+        ->where('date', '<=', $endOfDay->addDays(7))
+        ->get();
+
+    return ResponseHelper::success($reservedAppointments, 'Reserved appointments for today and the next week');
+}
+
 public function deleteAppointment($id)
 {
     $appointment = Appointment::find($id);

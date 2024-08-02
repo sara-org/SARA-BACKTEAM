@@ -19,7 +19,6 @@ class CreateAppointmentsTable extends Migration
             $table->string('day');
             $table->time('reserved_time');
             $table->date('date');
-           // $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }
