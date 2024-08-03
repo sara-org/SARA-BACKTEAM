@@ -513,8 +513,8 @@ public function addAppointment(Request $request)
     $existingAppointment = Appointment::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('reserved_time', $request->reserved_time)
-        ->orWhere('date', '<=', $reservedTime->addDays(6)->format('Y-m-d'))
-        ->orWhere('date', '>=', $date)
+        ->where('date', '<=', $reservedTime->addDays(6)->format('Y-m-d'))
+        ->where('date', '>=', $date)
         ->first();
 
     if ($existingAppointment) {
