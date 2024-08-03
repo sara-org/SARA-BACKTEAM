@@ -156,6 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //working times
     Route::post('/user/doctor/working-hours/add', [DoctorController::class, 'addWorkingHours']);
     Route::post('/user/doctor/working-hours/update', [DoctorController::class, 'updateWorkingHours']);
+    Route::get('/user/doctor/working-hours/getfordoctor', [DoctorController::class, 'getWorkingHoursForDoctor']);
     Route::get('/user/doctor/working-hours/get/{doctorId}', [DoctorController::class, 'getWorkingHours']);
     Route::get('/user/doctor/hoursnotreserved/get/{doctorId}', [DoctorController::class, 'getNotReservedHours']);
     Route::get('/user/doctor/hoursreserved/get/{doctorId}', [DoctorController::class, 'getReservedHours']);
@@ -166,7 +167,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
     Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
     Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
-    Route::get('/user/appointments/getreservedapp', [DoctorController::class, 'getReservedAppointments']);
+    Route::get('/user/appointments/admin/getreservedapp', [DoctorController::class, 'getReservedAppointmentsForAdmin']);
+    Route::get('/user/appointments/doctor/getreservedapp', [DoctorController::class, 'getReservedAppointmentsForDoctor']);
     Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
     Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
     // sessions
