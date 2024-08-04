@@ -9,21 +9,12 @@ class Appointment extends Model
 {
     protected $guarded = [];
     protected $fillable = [
-        'doctor_id',
-        'day',
-        'reserved_time',
+        'work_id',
         'date',
-        'app_date',
-        'status'
     ];
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
-    }
 
-    public function user()
+    public function doctimes()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(WorkingHours::class,'work_id');
     }
-
 }

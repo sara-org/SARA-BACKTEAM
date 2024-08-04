@@ -165,12 +165,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // appointments
     Route::post('/user/appointments/add', [DoctorController::class, 'addAppointment']);
     Route::post('/user/appointments/update/{id}', [DoctorController::class, 'updateAppointment']);
-    Route::get('/user/appointments/getdocapp', [DoctorController::class, 'getAppointmentsForDoctorAndDay']);
-    Route::get('/user/appointments/getdayapp', [DoctorController::class, 'getAppointmentsForDay']);
-    Route::get('/user/appointments/admin/getreservedapp', [DoctorController::class, 'getReservedAppointmentsForAdmin']);
-    Route::get('/user/appointments/doctor/getreservedapp', [DoctorController::class, 'getReservedAppointmentsForDoctor']);
     Route::get('/user/appointment/getapp/{id}', [DoctorController::class, 'getAppointmentById']);
+    Route::get('/user/appointment/getfreeappfordate/{id}', [DoctorController::class, 'getFreeForDate']);
+    Route::get('/user/appointment/getnotfreeappfordate/{id}', [DoctorController::class, 'getNotFreeForDate']);
     Route::delete('/user/appointments/delete/{id}', [DoctorController::class, 'deleteAppointment']);
+    Route::get('/user/appointments/admin/all', [DoctorController::class, 'getAllForAdmin']);
+    Route::get('/user/appointments/doctor/all', [DoctorController::class, 'getAllForDoctor']);
+
     // sessions
     Route::post('/user/session/add', [SessionController::class, 'addSession']);
     Route::post('/user/session/update/{id}', [SessionController::class, 'updateSession']);

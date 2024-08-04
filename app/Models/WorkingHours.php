@@ -14,11 +14,17 @@ class WorkingHours extends Model
         'day',
         'start_time',
         'end_time',
-        'status',
     ];
-
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
+    }
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'work_id');
     }
 }

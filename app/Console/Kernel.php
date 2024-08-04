@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use App\Models\WorkingHours;
+use Carbon\Carbon;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -15,13 +16,13 @@ class Kernel extends ConsoleKernel
 protected function schedule(Schedule $schedule)
 {
     $schedule->call(function () {
-        $oneWeekAgo = now()->subWeek();
+        $day = Carbon::now()->dayName;
 
 
         WorkingHours::where('status', 1)
-            ->where('created_at', '<', $oneWeekAgo)
+            ->where('day', $day)
             ->update(['status' => 0]);
-    })->daily();
+    })->everyFifteenSeconds();
 }
     /**
      * Register the commands for the application.

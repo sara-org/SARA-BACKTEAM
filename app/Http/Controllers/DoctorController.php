@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Vaccination;
 use Illuminate\Support\Facades\Sanctum;
 use Illuminate\Support\Facades\Password;
 use App\Helper\ResponseHelper;
@@ -158,7 +157,6 @@ class DoctorController extends Controller
         $data['doctor_id'] = $doctorId;
         $start = Carbon::parse($data['start_time']);
         $end = Carbon::parse($data['end_time']);
-        $interval = CarbonInterval::minutes(30);
         $workingHoursData = [];
         while ($start < $end) {
             $workingHoursData[] = [
@@ -166,7 +164,6 @@ class DoctorController extends Controller
                 'day' => $data['day'],
                 'start_time' => $start->format('H:i'),
                 'end_time' => $start->addMinutes(30)->format('H:i'),
-                'status' => 0,
             ];
         }
         WorkingHours::insert($workingHoursData);
@@ -262,7 +259,8 @@ class DoctorController extends Controller
     if ($user->role !== '2' && $user->id != $doctorId) {
     return ResponseHelper::error(null, null, 'Unauthorized', 401);}
     $doctor = User::where('id', $doctorId)->first();
-    return ResponseHelper::success($doctor->doctimes->toArray());}
+    return ResponseHelper::success($doctor->doctimes->toArray());
+}
 
 
     public function getNotReservedHours(Request $request, $doctorId)
@@ -279,7 +277,14 @@ class DoctorController extends Controller
             return ResponseHelper::error(null, null, 'Doctor not found', 404);
         }
 
-        $freeSlots = $doctor->doctimes()->where('status', 0)->get();
+        $notFree = $doctor
+        ->doctimes()
+        ->whereHas('appointments', function($q){
+            $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(6)->toDateString()]);
+        })
+        ->pluck('id');
+
+        $freeSlots = $doctor->doctimes()->whereNotIn('id', $notFree)->get();
 
         return ResponseHelper::success($freeSlots->toArray());
     }
@@ -297,7 +302,15 @@ class DoctorController extends Controller
             return ResponseHelper::error(null, null, 'Doctor not found', 404);
         }
 
-        $reservedSlots = $doctor->doctimes()->where('status', 1)->get();
+        $reservedSlots = $doctor
+        ->doctimes()
+        ->whereHas('appointments', function($q){
+            $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+        })
+        ->with('appointments', function($q){
+            $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+        })
+        ->get();
 
         return ResponseHelper::success($reservedSlots->toArray());
     }
@@ -310,10 +323,10 @@ public function getWorkingDays(Request $request, $doctorId)
     }
 
     $doctor = User::where('id', $doctorId)->first();
-    $workingDays = $doctor->doctimes->pluck('day')->toArray();
-    $uniqueWorkingDays = array_unique($workingDays);
-    $valuesOnly = array_values($uniqueWorkingDays);
-    return ResponseHelper::success($valuesOnly);
+    $workingDays = $doctor->doctimes()->select('day')->groupBy('day')->pluck('day')->toArray();
+    //$uniqueWorkingDays = array_unique($workingDays);
+   // $workingDays = array_values($workingDays);
+    return ResponseHelper::success($workingDays);
 }
 
 public function deleteWorkingHours(Request $request)
@@ -477,10 +490,10 @@ public function addAppointment(Request $request)
         'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
         'reserved_time' => ['required', 'date_format:H:i'],
         'app_date' => ['required', 'date_format:Y-m-d'],
-
     ]);
 
-    if ($validator->fails()) {
+    $day = Carbon::make($request->app_date)->dayName;
+    if ($validator->fails() || $day !== $request->day) {
         return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
@@ -498,45 +511,27 @@ public function addAppointment(Request $request)
         $workingHours = WorkingHours::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
         ->where('start_time', $request->reserved_time)
-        ->where('end_time', '>', $request->reserved_time)
         ->first();
-        if ($workingHours) {
-            $workingHours->status = 1;
-            $workingHours->save();
-        }
-    if (!$workingHours) {
+
+    if (!$workingHours)
+    {
         return ResponseHelper::error([], null, 'Invalid appointment roles', 422);
     }
 
     $date = Carbon::now()->format('Y-m-d');
 
-    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
-        ->where('day', $request->day)
-        ->where('reserved_time', $request->reserved_time)
-        ->where('date', '<=', $reservedTime->addDays(6)->format('Y-m-d'))
-        ->where('date', '>=', $date)
+    $existingAppointment = Appointment::where('work_id', $workingHours->id)
+        ->where('date', $request->app_date)
         ->first();
 
     if ($existingAppointment) {
         return ResponseHelper::error([], null, 'Another appointment exists within the same time', 422);
     }
 
-    // $latestAppointments = Appointment::where('doctor_id', $doctor->id)
-    //     ->where('day', $request->day)
-    //     ->where('reserved_time', $request->reserved_time)
-    //     ->where('date', '>=', $currentTime->subDays(7)->format('Y-m-d'))
-    //     ->get();
-
-    // if ($latestAppointments->isNotEmpty()) {
-    //     return ResponseHelper::error([], null, 'Another appointment exists within the same time slot in the last 7 days', 422);
-    // }
     $appointment = Appointment::create([
-        'doctor_id' => $doctor->id,
-        'day' => $request->day,
-        'reserved_time' => $request->reserved_time,
-        'date' => $date,
-        'app_date' => $request->app_date,
-    ]);
+        'work_id' => $workingHours->id,
+        'date' => $request->app_date,
+    ])->load('doctimes');
 
     return ResponseHelper::created($appointment, 'Appointment created');
 }
@@ -599,35 +594,6 @@ public function updateAppointment(Request $request, $id)
 
     return ResponseHelper::success($appointment, 'Appointment updated');
 }
-public function getAppointmentsForDay(Request $request)
-{
-    $day = $request->query('day');
-    $today = now()->format('Y-m-d');
-    $appointments = Appointment::where('day', $day)
-        ->whereDate('date', '>=', $today)
-        ->whereDate('date', '<', date('Y-m-d', strtotime($today . ' + 7 days')))
-        ->get();
-
-    return response()->json([
-        'appointments' => $appointments,
-    ]);
-}
-
-public function getAppointmentsForDoctorAndDay(Request $request)
-{
-    $doctorId = $request->input('doctor_id');
-    $day = $request->input('day');
-    $today = now()->format('Y-m-d');
-    $appointments = Appointment::where('doctor_id', $doctorId)
-        ->where('day', $day)
-        ->whereDate('date', '>=', $today)
-        ->whereDate('date', '<', date('Y-m-d', strtotime($today . ' + 7 days')))
-        ->get();
-
-    return response()->json([
-        'appointments' => $appointments,
-    ]);
-}
 
 public function getAppointmentById($id)
 {
@@ -642,41 +608,12 @@ public function getAppointmentById($id)
     ]);
 }
 
-public function getReservedAppointmentsForAdmin(Request $request)
-{
-
-    if (Auth::user()->role != '2') {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
-
-    $endOfDay = Carbon::parse(now()->endOfDay());
-    $reservedAppointments = Appointment::where('app_date', '<=', $endOfDay->addDays(7))
-        ->get();
-
-    return ResponseHelper::success($reservedAppointments, 'Reserved appointments for today and the next week');
-}
-public function getReservedAppointmentsForDoctor(Request $request)
-{
-
-    if (Auth::user()->role != '3') {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
-
-    $endOfDay = Carbon::parse(now()->endOfDay());
-
-    $doctorId = Auth::user()->id;
-    $reservedAppointments = Appointment::where('app_date', '<=', $endOfDay->addDays(7))
-        ->where('doctor_id', $doctorId)
-        ->get();
-
-    return ResponseHelper::success($reservedAppointments, 'Reserved appointments for today and the next week');
-}
-
 public function deleteAppointment($id)
 {
     $appointment = Appointment::find($id);
 
-    if (!$appointment) {
+    if (!$appointment)
+    {
         return ResponseHelper::error([], null, 'Appointment not found', 404);
     }
 
@@ -686,4 +623,74 @@ public function deleteAppointment($id)
         'message' => 'Appointment deleted successfully',
     ]);
 }
+    public function getFreeForDate(Request $request, $id){
+        $date = $request->date;
+        if (Auth::user()->role != '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+        $day = Carbon::make($date)->dayName;
+        $notFree = WorkingHours::query()
+            ->where('doctor_id',  $id)
+            ->where('day', $day)
+            ->whereHas('appointments', function($query) use ($date){
+                $query->where('date', $date);
+            })
+            ->pluck('id');
+        $free = WorkingHours::query()
+        ->where('doctor_id',  $id)
+        ->where('day', $day)
+        ->whereNotIn('id', $notFree)
+        ->get();
+        return ResponseHelper::success($free, 'Reserved free appointments for this date');
+    }
+
+    public function getNotFreeForDate(Request $request, $id){
+        $date = $request->date;
+        if (Auth::user()->role != '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+        $day = Carbon::make($date)->dayName;
+        $notFree = WorkingHours::query()
+            ->where('doctor_id',  $id)
+            ->where('day', $day)
+            ->whereHas('appointments', function($query) use ($date){
+                $query->where('date', $date);
+            })
+            ->get();
+        return ResponseHelper::success($notFree, 'Reserved Not free appointments for this date');
+    }
+
+    public function getAllForAdmin()
+    {
+        if (Auth::user()->role != '2') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+        $result = WorkingHours::query()
+            ->whereHas('appointments', function($q){
+                $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+            })
+            ->with('appointments', function($q){
+                $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+            })
+            ->get();
+            return ResponseHelper::success($result, ' all Reserved appointments for Admin this week');
+    }
+    public function getAllForDoctor(Request $request)
+    {
+        if (Auth::user()->role != '3') {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+
+        $result = WorkingHours::where('doctor_id', auth()->id())
+            ->whereHas('appointments', function($q){
+                $q->whereBetween('date',[Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+            })
+            ->with(['appointments' => function($q){
+                $q->whereBetween('date',[Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
+            }])
+            ->get();
+
+        return ResponseHelper::success($result, ' all Reserved appointments for Doctor this week');
+    }
+
 }
