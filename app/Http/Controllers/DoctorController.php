@@ -113,7 +113,7 @@ class DoctorController extends Controller
 
         return ResponseHelper::success([], 'Doctor deleted');
     }
-      public function addWorkingHours(Request $request)
+    public function addWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -130,18 +130,12 @@ class DoctorController extends Controller
         }
 
         $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
-            ->where('day', $request->input('day'))
-            ->where(function ($query) use ($request) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('start_time', '<=', $request->input('start_time'))
-                        ->where('end_time', '>=', $request->input('start_time'));
-                })
-                ->orWhere(function ($q) use ($request) {
-                    $q->where('start_time', '<=', $request->input('end_time'))
-                        ->where('end_time', '>=', $request->input('end_time'));
-                });
-            })
-            ->first();
+    ->orWhere('day', $request->input('day'))
+    ->where(function ($query) use ($request) {
+        $query->where('start_time', '<=', $request->input('end_time'))
+            ->where('end_time', '>=', $request->input('start_time'));
+    })
+    ->exists();
 
         if ($existingWorkingHours) {
             return response()->json([
@@ -166,7 +160,9 @@ class DoctorController extends Controller
                 'end_time' => $start->addMinutes(30)->format('H:i'),
             ];
         }
+
         WorkingHours::insert($workingHoursData);
+
         $response = [
             'data' => [
                 'day' => $data['day'],
@@ -212,7 +208,6 @@ class DoctorController extends Controller
                 'day' => $day,
                 'start_time' => $start->format('H:i'),
                 'end_time' => $start->addMinutes(30)->format('H:i'),
-                'status' => 0,
             ];
         }
         WorkingHours::insert($workingHoursData);
@@ -533,8 +528,9 @@ public function addAppointment(Request $request)
         'date' => $request->app_date,
     ])->load('doctimes');
 
-    return ResponseHelper::created($appointment, 'Appointment created');
+    return ResponseHelper::created($appointment, 'Appointment created Successfully');
 }
+
 public function updateAppointment(Request $request, $id)
 {
     if (Auth::user()->role != '2') {
@@ -547,50 +543,52 @@ public function updateAppointment(Request $request, $id)
         })],
         'day' => ['required', 'string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
         'reserved_time' => ['required', 'date_format:H:i'],
+        'app_date' => ['required', 'date_format:Y-m-d'],
     ]);
 
-    if ($validator->fails()) {
+    if ($validator->fails())
+    {
         return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
     }
 
     $doctor = User::find($request->doctor_id);
 
-    if (!$doctor) {
+    if (!$doctor)
+    {
         return ResponseHelper::error([], null, 'Doctor not found', 404);
     }
 
-    $reserved_time = Carbon::parse($request->reserved_time)->format('H:i');
-
     $workingHours = WorkingHours::where('doctor_id', $doctor->id)
         ->where('day', $request->day)
-        ->where('start_time', '<=', $reserved_time)
-        ->where('end_time', '>=', $reserved_time)
+        ->where('start_time', $request->reserved_time)
         ->first();
 
-    if (!$workingHours) {
+    if (!$workingHours)
+    {
         return ResponseHelper::error([], null, 'Invalid appointment', 422);
     }
 
-    $existingAppointment = Appointment::where('doctor_id', $doctor->id)
-        ->where('day', $request->day)
-        ->where('reserved_time', $request->reserved_time)
+    $existingAppointment = Appointment::where('work_id', $workingHours->id)
+        ->where('date', $request->app_date)
         ->where('id', '!=', $id)
         ->first();
 
-    if ($existingAppointment) {
-        return ResponseHelper::error([], null, 'Appointment already exists at this time', 422);
+    if ($existingAppointment)
+    {
+        return ResponseHelper::error([], null, 'Another appointment exists within the same time', 422);
     }
 
     $appointment = Appointment::find($id);
 
-    if (!$appointment) {
+    if (!$appointment)
+    {
         return ResponseHelper::error([], null, 'Appointment not found', 404);
     }
 
-    $appointment->doctor_id = $doctor->id;
-    $appointment->day = $request->day;
-    $appointment->reserved_time = $request->reserved_time;
-    $appointment->save();
+    $appointment->update([
+        'work_id' => $workingHours->id,
+        'date' => $request->app_date,
+    ]);
 
     return ResponseHelper::success($appointment, 'Appointment updated');
 }

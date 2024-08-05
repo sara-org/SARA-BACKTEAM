@@ -15,14 +15,14 @@ class Kernel extends ConsoleKernel
 
 protected function schedule(Schedule $schedule)
 {
-    $schedule->call(function () {
-        $day = Carbon::now()->dayName;
+    // $schedule->call(function () {
+    //     $day = Carbon::now()->dayName;
 
 
-        WorkingHours::where('status', 1)
-            ->where('day', $day)
-            ->update(['status' => 0]);
-    })->everyFifteenSeconds();
+    //     WorkingHours::where('status', 1)
+    //         ->where('day', $day)
+    //         ->update(['status' => 0]);
+    // })->daily();
 }
     /**
      * Register the commands for the application.
