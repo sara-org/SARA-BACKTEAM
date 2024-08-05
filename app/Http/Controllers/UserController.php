@@ -399,8 +399,6 @@ public function getAllWallets()
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
     }
-
-
     public function updateDonation(Request $request, $donation_id)
     {
         try {

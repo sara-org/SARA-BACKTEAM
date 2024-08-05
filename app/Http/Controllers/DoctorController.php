@@ -7,7 +7,6 @@ use App\Helper\ResponseHelper;
 use App\Models\User;
 use App\Models\WorkingHours;
 use App\Models\MedicalRecord;
-use App\Models\Animal;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
@@ -130,12 +129,12 @@ class DoctorController extends Controller
         }
 
         $existingWorkingHours = WorkingHours::where('doctor_id', $request->input('doctor_id'))
-    ->orWhere('day', $request->input('day'))
-    ->where(function ($query) use ($request) {
+       ->orWhere('day', $request->input('day'))
+       ->where(function ($query) use ($request) {
         $query->where('start_time', '<=', $request->input('end_time'))
             ->where('end_time', '>=', $request->input('start_time'));
-    })
-    ->exists();
+       })
+       ->exists();
 
         if ($existingWorkingHours) {
             return response()->json([
@@ -174,7 +173,6 @@ class DoctorController extends Controller
 
         return response()->json($response);
     }
-
     public function updateWorkingHours(Request $request)
     {
         if (Auth::user()->role != '3') {
@@ -215,7 +213,7 @@ class DoctorController extends Controller
         return ResponseHelper::success(['day' => $day, 'working_hours' => $workingHoursData], 'Working hours updated successfully');
     }
     public function getWorkingHoursForDoctor(Request $request)
-{
+    {
     $doctorId = $request->input('doctor_id');
 
     $workingHours = WorkingHours::where('doctor_id', $doctorId)
@@ -246,18 +244,16 @@ class DoctorController extends Controller
         'doctor_id' => $doctorId,
         'doctor_working_hours' => $doctorWorkingHours,
     ]);
-}
+    }
 
     public function getWorkingHours(Request $request, $doctorId)
-{
+    {
     $user = Auth::user();
     if ($user->role !== '2' && $user->id != $doctorId) {
     return ResponseHelper::error(null, null, 'Unauthorized', 401);}
     $doctor = User::where('id', $doctorId)->first();
     return ResponseHelper::success($doctor->doctimes->toArray());
-}
-
-
+    }
     public function getNotReservedHours(Request $request, $doctorId)
     {
         $user = Auth::user();
@@ -310,7 +306,7 @@ class DoctorController extends Controller
         return ResponseHelper::success($reservedSlots->toArray());
     }
 public function getWorkingDays(Request $request, $doctorId)
-{
+    {
     $user = Auth::user();
 
     if ($user->role !== '2' && $user->id != $doctorId) {
@@ -319,13 +315,11 @@ public function getWorkingDays(Request $request, $doctorId)
 
     $doctor = User::where('id', $doctorId)->first();
     $workingDays = $doctor->doctimes()->select('day')->groupBy('day')->pluck('day')->toArray();
-    //$uniqueWorkingDays = array_unique($workingDays);
-   // $workingDays = array_values($workingDays);
     return ResponseHelper::success($workingDays);
-}
+    }
 
 public function deleteWorkingHours(Request $request)
-{
+    {
     $validator = Validator::make($request->all(), [
         'doctor_id' => ['required', 'integer'],
         'day' => ['required', 'string'],
@@ -344,7 +338,7 @@ public function deleteWorkingHours(Request $request)
         ->delete();
 
     return ResponseHelper::success(['doctor_id' => $doctorId, 'day' => $day], 'Working hours deleted successfully');
-}
+    }
 
     public function addMedicalRecord(Request $request)
     {
@@ -408,7 +402,7 @@ public function deleteWorkingHours(Request $request)
 }
 
 public function getAllMedicalRecords()
-{
+   {
     if (Auth::user()->role != '3') {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
@@ -418,9 +412,9 @@ public function getAllMedicalRecords()
     $medicalRecords = MedicalRecord::where('doctor_id', $doctorId)->get();
 
     return ResponseHelper::success($medicalRecords, 'All Medical Records retrieved');
-}
+   }
 public function getMedicalRecordsForAnimal(Request $request, $animalId)
-{
+   {
     if (Auth::user()->role != '3') {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
@@ -435,9 +429,9 @@ public function getMedicalRecordsForAnimal(Request $request, $animalId)
     $medicalRecords = MedicalRecord::where('animal_id', $animalId)->get();
 
     return ResponseHelper::success($medicalRecords, 'Medical records retrieved successfully');
-}
+   }
 public function getMedicalRecord($id)
-{
+   {
     if (Auth::user()->role != '3') {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
@@ -451,9 +445,9 @@ public function getMedicalRecord($id)
     }
 
     return ResponseHelper::success($medicalRecord, 'Medical record retrieved');
-}
+   }
 public function deleteMedicalRecord($id)
-{
+   {
     if (Auth::user()->role != '3') {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
@@ -469,7 +463,7 @@ public function deleteMedicalRecord($id)
     $medicalRecord->delete();
 
     return ResponseHelper::success([], 'Medical record deleted');
-}
+   }
 
 public function addAppointment(Request $request)
 {
@@ -621,7 +615,8 @@ public function deleteAppointment($id)
         'message' => 'Appointment deleted successfully',
     ]);
 }
-    public function getFreeForDate(Request $request, $id){
+public function getFreeForDate(Request $request, $id)
+{
         $date = $request->date;
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -640,9 +635,9 @@ public function deleteAppointment($id)
         ->whereNotIn('id', $notFree)
         ->get();
         return ResponseHelper::success($free, 'Reserved free appointments for this date');
-    }
-
-    public function getNotFreeForDate(Request $request, $id){
+}
+public function getNotFreeForDate(Request $request, $id)
+{
         $date = $request->date;
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -656,13 +651,12 @@ public function deleteAppointment($id)
             })
             ->get();
         return ResponseHelper::success($notFree, 'Reserved Not free appointments for this date');
-    }
-
-    public function getAllForAdmin()
+}
+public function getAllForAdmin()
 {
     if (Auth::user()->role != '2') {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
-    }
+                                  }
 
     $today = Carbon::today();
     $startOfWeek = $today->startOfWeek()->subDay();
