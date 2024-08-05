@@ -595,7 +595,7 @@ public function updateAppointment(Request $request, $id)
 
 public function getAppointmentById($id)
 {
-    $appointment = Appointment::find($id);
+    $appointment = Appointment::with('doctimes')->find($id);
 
     if (!$appointment) {
         return ResponseHelper::error([], null, 'Appointment not found', 404);
@@ -659,36 +659,44 @@ public function deleteAppointment($id)
     }
 
     public function getAllForAdmin()
-    {
-        if (Auth::user()->role != '2') {
-            return ResponseHelper::error(null, null, 'Unauthorized', 401);
-        }
-        $result = WorkingHours::query()
-            ->whereHas('appointments', function($q){
-                $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
-            })
-            ->with('appointments', function($q){
-                $q->whereBetween('date',[ Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
-            })
-            ->get();
-            return ResponseHelper::success($result, ' all Reserved appointments for Admin this week');
+{
+    if (Auth::user()->role != '2') {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
-    public function getAllForDoctor(Request $request)
-    {
-        if (Auth::user()->role != '3') {
-            return ResponseHelper::error(null, null, 'Unauthorized', 401);
-        }
 
-        $result = WorkingHours::where('doctor_id', auth()->id())
-            ->whereHas('appointments', function($q){
-                $q->whereBetween('date',[Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
-            })
-            ->with(['appointments' => function($q){
-                $q->whereBetween('date',[Carbon::today()->toDateString(), Carbon::today()->addDays(7)->toDateString()]);
-            }])
-            ->get();
+    $today = Carbon::today();
+    $startOfWeek = $today->startOfWeek()->subDay();
+    $endOfWeek = $startOfWeek->copy()->addDays(6);
 
-        return ResponseHelper::success($result, ' all Reserved appointments for Doctor this week');
+    $result = WorkingHours::query()
+        ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
+            $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+        })
+        ->with(['appointments' => function($q) use ($startOfWeek, $endOfWeek) {
+            $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+        }])
+        ->get();
+
+    return ResponseHelper::success($result, 'all Reserved appointments for Admin this week');
+}
+public function getAllForDoctor(Request $request)
+{
+    if (Auth::user()->role != '3') {
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);
     }
+    $today = Carbon::today();
+    $startOfWeek = $today->startOfWeek()->subDay();
+    $endOfWeek = $startOfWeek->copy()->addDays(6);
+    $result = WorkingHours::where('doctor_id', auth()->id())
+    ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
+        $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+    })
+    ->with(['appointments' => function($q) use ($startOfWeek, $endOfWeek) {
+        $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+    }])
+    ->get();
+
+    return ResponseHelper::success($result, 'all Reserved appointments for Doctor this week');
+}
 
 }
