@@ -51,7 +51,7 @@ class AnimalController extends Controller
             $existingAnimal = Animal::where('name', $request->name)
             ->Where('age', $request->age)
             ->where('health', $request->health)
-            ->orWhere('photo',$request->photo)
+            ->Where('photo',$request->photo)
             ->Where('entry_date', $request->entry_date)
             ->Where('animaltype_id', $request->animaltype_id)
             ->first();

@@ -67,8 +67,35 @@ class EmergencyController extends Controller
         }
         $emergency->status = 1;
         $emergency->save();
-
+        // $animal = $emergency->animal;
+        // $animal->requests()->delete();
         return ResponseHelper::success($emergency, 'Emergency accepted successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function rejectEmergency($emergencyId)
+{
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $user = Auth::user();
+        if ($user->role !== '2') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $emergency = Emergency::find($emergencyId);
+
+        if (!$emergency) {
+            return ResponseHelper::error([], null, 'Emergency not found', 404);
+        }
+
+        $emergency->status = 0;
+        $emergency->save();
+
+        return ResponseHelper::success($emergency, 'Emergency rejected successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }

@@ -370,7 +370,9 @@ public function ApproveAdoption(Request $request, $adoptionId)
         Adoption::where('animal_id', $adoption->animal_id)
         ->where('adop_status', 0)
         ->delete();
-
+        Sponcership::where('animal_id', $adoption->animal_id)
+        //->where('spon_status', 0)
+        ->delete();
         return ResponseHelper::success($adoption, 'Adoption approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Adoption not found', 404);

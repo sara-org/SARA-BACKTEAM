@@ -113,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
   // Emergencies
    Route::post('/user/emergency/req', [EmergencyController::class, 'reqEmergency']);
    Route::post('/user/emergency/accept/{emergency_id}', [EmergencyController::class, 'acceptEmergency']);
+   Route::post('/user/emergency/reject/{emergency_id}', [EmergencyController::class, 'rejectEmergency']);
    Route::post('/user/emergency/update/{emergency_id}', [EmergencyController::class, 'updateEmergency']);
    Route::get('/user/emergency/get/{emergency_id}', [EmergencyController::class, 'getEmergencyById']);
    Route::get('/user/emergency/getall', [EmergencyController::class, 'getAllEmergencies']);
