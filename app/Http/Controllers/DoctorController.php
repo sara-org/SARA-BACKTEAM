@@ -214,38 +214,39 @@ class DoctorController extends Controller
     }
     public function getWorkingHoursForDoctor(Request $request)
     {
-    $doctorId = $request->input('doctor_id');
+        $loggedInUser = Auth::user();
 
-    $workingHours = WorkingHours::where('doctor_id', $doctorId)
-        ->select('day', 'start_time', 'end_time')
-        ->get();
+        $doctorId = $loggedInUser->id;
 
-    $doctorWorkingHours = [];
-    foreach ($workingHours as $workingHour) {
-        $dayExists = false;
-        foreach ($doctorWorkingHours as &$doctorWorkingHour) {
-            if ($doctorWorkingHour['day'] === $workingHour->day) {
-                $dayExists = true;
-                $doctorWorkingHour['end_time'] = $workingHour->end_time;
-                break;
+        $workingHours = WorkingHours::where('doctor_id', $doctorId)
+            ->select('day', 'start_time', 'end_time')
+            ->get();
+
+        $doctorWorkingHours = [];
+        foreach ($workingHours as $workingHour) {
+            $dayExists = false;
+            foreach ($doctorWorkingHours as &$doctorWorkingHour) {
+                if ($doctorWorkingHour['day'] === $workingHour->day) {
+                    $dayExists = true;
+                    $doctorWorkingHour['end_time'] = $workingHour->end_time;
+                    break;
+                }
+            }
+
+            if (!$dayExists) {
+                $doctorWorkingHours[] = [
+                    'day' => $workingHour->day,
+                    'start_time' => $workingHour->start_time,
+                    'end_time' => $workingHour->end_time,
+                ];
             }
         }
 
-        if (!$dayExists) {
-            $doctorWorkingHours[] = [
-                'day' => $workingHour->day,
-                'start_time' => $workingHour->start_time,
-                'end_time' => $workingHour->end_time,
-            ];
-        }
+        return response()->json([
+            'doctor_id' => $doctorId,
+            'doctor_working_hours' => $doctorWorkingHours,
+        ]);
     }
-
-    return response()->json([
-        'doctor_id' => $doctorId,
-        'doctor_working_hours' => $doctorWorkingHours,
-    ]);
-    }
-
     public function getWorkingHours(Request $request, $doctorId)
     {
     $user = Auth::user();
@@ -318,28 +319,31 @@ public function getWorkingDays(Request $request, $doctorId)
     return ResponseHelper::success($workingDays);
     }
 
-public function deleteWorkingHours(Request $request)
+    public function deleteWorkingHours(Request $request)
     {
-    $validator = Validator::make($request->all(), [
-        'doctor_id' => ['required', 'integer'],
-        'day' => ['required', 'string'],
-    ]);
+        $loggedInUser = Auth::user();
+        $doctorId = $loggedInUser->id;
 
-    if ($validator->fails()) {
-        return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
+        $validator = Validator::make($request->all(), [
+            'day' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseHelper::error($validator->errors()->all(), null, 'Validation failed', 422);
+        }
+
+        $day = $request->input('day');
+
+        if ($loggedInUser->role !== '3' && $loggedInUser->id != $request->input('doctor_id')) {
+            return ResponseHelper::error(null, null, 'Unauthorized', 401);
+        }
+
+        WorkingHours::where('doctor_id', $doctorId)
+            ->where('day', $day)
+            ->delete();
+
+            return ResponseHelper::success(null, 'Working hours deleted successfully');
     }
-
-    $doctorId = $request->input('doctor_id');
-    $day = $request->input('day');
-    if (Auth::user()->role !== '2' && Auth::user()->id != $request->input('doctor_id'))
-    { return ResponseHelper::error(null, null, 'Unauthorized', 401);}
-    WorkingHours::where('doctor_id', $doctorId)
-        ->where('day', $day)
-        ->delete();
-
-    return ResponseHelper::success(['doctor_id' => $doctorId, 'day' => $day], 'Working hours deleted successfully');
-    }
-
     public function addMedicalRecord(Request $request)
     {
         if (Auth::user()->role != '3') {
