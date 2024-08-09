@@ -359,7 +359,8 @@ public function ReqAdoption(Request $request)
 public function ApproveAdoption(Request $request, $adoptionId)
 {
     try {
-        if (Auth::user()->role !== '2') {
+        if (Auth::user()->role !== '2')
+        {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -370,9 +371,10 @@ public function ApproveAdoption(Request $request, $adoptionId)
         Adoption::where('animal_id', $adoption->animal_id)
         ->where('adop_status', 0)
         ->delete();
+
         Sponcership::where('animal_id', $adoption->animal_id)
-        //->where('spon_status', 0)
         ->delete();
+
         return ResponseHelper::success($adoption, 'Adoption approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Adoption not found', 404);
@@ -497,7 +499,7 @@ public function addFeeding(Request $request)
         }
 
         $user = Auth::user();
-        if ($user->role !== '4') {
+        if ($user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -575,9 +577,16 @@ public function getUnfedDepartments()
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
-        $unfedDepartments = Department::whereDoesntHave('feedings')->get();
+        $today = Carbon::now()->toDateString();
 
-        return ResponseHelper::success($unfedDepartments, 'Unfed departments retrieved successfully');
+        $unfedDepartments = Department::whereDoesntHave('feedings', function ($query) use ($today) {
+            $query->whereDate('feeding_date', $today);
+        })->get();
+
+        $currentTime = Carbon::now();
+        $message = 'Unfed departments retrieved successfully at ' . $currentTime;
+
+        return ResponseHelper::success($unfedDepartments, $message);
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
