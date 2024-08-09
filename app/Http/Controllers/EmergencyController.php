@@ -67,8 +67,6 @@ class EmergencyController extends Controller
         }
         $emergency->status = 1;
         $emergency->save();
-        // $animal = $emergency->animal;
-        // $animal->requests()->delete();
         return ResponseHelper::success($emergency, 'Emergency accepted successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
@@ -91,11 +89,8 @@ public function rejectEmergency($emergencyId)
         if (!$emergency) {
             return ResponseHelper::error([], null, 'Emergency not found', 404);
         }
-
-        $emergency->status = 0;
-        $emergency->save();
-
-        return ResponseHelper::success($emergency, 'Emergency rejected successfully');
+        $emergency->delete();
+        return ResponseHelper::success(null, 'Emergency rejected successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
