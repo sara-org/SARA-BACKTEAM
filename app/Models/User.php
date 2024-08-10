@@ -8,6 +8,7 @@ use App\Models\Vaccination;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\UserEmr;
+use App\Models\WorkingHours;
 use App\Models\UserSession;
 use App\Models\ResetCodePassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -77,10 +78,7 @@ public function employee()
 {
     return $this->hasOne(Employee::class, 'user_id', 'id');
 }
-public function doctor()
-{
-    return $this->hasOne(Doctor::class, 'user_id', 'id');
-}
+
 public function feedings()
 {
     return $this->hasMany(Feeding::class);
@@ -112,7 +110,11 @@ public function userEmergencies()
     }
     public function doctimes()
     {
-        return $this->hasMany(WorkingHours::class,'doctor_id');
+        return $this->hasMany(WorkingHours::class,'doctor_id', 'id');
+    }
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class, 'user_id', 'id');
     }
     public function likes()
     {

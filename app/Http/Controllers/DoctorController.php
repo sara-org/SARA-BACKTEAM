@@ -664,15 +664,15 @@ public function getAllForAdmin()
 
     $today = Carbon::today();
     $startOfWeek = $today->startOfWeek()->subDay();
-    $endOfWeek = $startOfWeek->copy()->addDays(6);
+    $endOfWeek = $startOfWeek->copy()->addDays(7);
 
-    $result = WorkingHours::with('doctor.user')
+    $result = WorkingHours::query()
     ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
         $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
     })
     ->with(['appointments' => function($q) use ($startOfWeek, $endOfWeek) {
         $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
-    }])
+    },'user.doctor'])
     ->get();
 
     return ResponseHelper::success($result, 'all Reserved appointments for Admin this week');

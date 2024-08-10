@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,9 +15,9 @@ class Doctor extends Model
     ];
 
     public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
+{
+    return $this->belongsTo(User::class, 'user_id', 'id');
+}
 
     public function medicalRecords()
     {
@@ -25,7 +25,7 @@ class Doctor extends Model
     }
     public function doctimes()
     {
-        return $this->hasMany(WorkingHours::class);
+        return $this->hasMany(WorkingHours::class,'doctor_id', 'id');
     }
     public function appointments()
     {

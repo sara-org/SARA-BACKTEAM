@@ -17,14 +17,16 @@ class WorkingHours extends Model
     ];
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'doctor_id', 'id');
     }
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
-    }
+    // public function doctor()
+    // {
+    //     return $this->belongsTo(User::class, 'doctor_id', 'id');
+    // }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class, 'work_id');
     }
 }
+
