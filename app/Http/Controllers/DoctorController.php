@@ -666,14 +666,14 @@ public function getAllForAdmin()
     $startOfWeek = $today->startOfWeek()->subDay();
     $endOfWeek = $startOfWeek->copy()->addDays(6);
 
-    $result = WorkingHours::query()
-        ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
-            $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
-        })
-        ->with(['appointments' => function($q) use ($startOfWeek, $endOfWeek) {
-            $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
-        }])
-        ->get();
+    $result = WorkingHours::with('doctor.user')
+    ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
+        $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+    })
+    ->with(['appointments' => function($q) use ($startOfWeek, $endOfWeek) {
+        $q->whereBetween('date', [$startOfWeek, $endOfWeek]);
+    }])
+    ->get();
 
     return ResponseHelper::success($result, 'all Reserved appointments for Admin this week');
 }
