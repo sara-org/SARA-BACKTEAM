@@ -659,8 +659,7 @@ public function getNotFreeForDate(Request $request, $id)
 public function getAllForAdmin()
 {
     if (Auth::user()->role != '2') {
-        return ResponseHelper::error(null, null, 'Unauthorized', 401);
-                                  }
+        return ResponseHelper::error(null, null, 'Unauthorized', 401);}
 
     $today = Carbon::today();
     $startOfWeek = $today->startOfWeek()->subDay();
