@@ -13,8 +13,8 @@ use Illuminate\Validation\Rule;
 
 class CenterController extends Controller
 {
-    public function addText(Request $request)
-    {
+public function addText(Request $request)
+{
         if (Auth::user()->role !== '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -33,9 +33,9 @@ class CenterController extends Controller
             'text' => $text,
             'message' => 'Text created'
         ], 201);
-    }
-    public function updateText(Request $request, $centerinfo_id)
-    {
+}
+public function updateText(Request $request, $centerinfo_id)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -60,9 +60,9 @@ class CenterController extends Controller
             'text' => $text,
             'message' => 'Text updated'
         ], 201);
-    }
-    public function getText($centerinfo_id)
-    {
+}
+public function getText($centerinfo_id)
+{
         $text = Centerinfo::find($centerinfo_id);
 
         if (!$text) {
@@ -70,10 +70,9 @@ class CenterController extends Controller
         }
 
         return ResponseHelper::success($text, 'Text retrieved');
-    }
-
-    public function deleteText($centerinfo_id)
-    {
+}
+public function deleteText($centerinfo_id)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -87,9 +86,9 @@ class CenterController extends Controller
         $text->delete();
 
         return ResponseHelper::success([], 'Text deleted');
-    }
-    public function addImage(Request $request)
-    {
+}
+public function addImage(Request $request)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -106,10 +105,9 @@ class CenterController extends Controller
         $img = Centerimg::create($request->all());
 
         return ResponseHelper::created($img, 'Image created');
-    }
-
-    public function updateImage(Request $request, $centerimg_id)
-    {
+}
+public function updateImage(Request $request, $centerimg_id)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -132,21 +130,21 @@ class CenterController extends Controller
         $img->update($request->all());
 
         return ResponseHelper::updated($img, 'Image updated');
-    }    public function getImage($centerimg_id)
-    {
+}
+public function getImage($centerimg_id)
+{
         $img = Centerimg::find($centerimg_id);
         if (!$img) {return ResponseHelper::error([], null, 'Center image not found', 404);}
         return ResponseHelper::success($img, 'Text retrieved');
-    }
-    public function deleteImage($centerimg_id)
-    {
+}
+public function deleteImage($centerimg_id)
+{
       if (Auth::user()->role != '2') {return response()->json(ResponseHelper::error(null, null, 'Unauthorized', 401));}
         $img = Centerimg::find($centerimg_id);
         if (!$img) {return ResponseHelper::error([], null, 'Image not found', 404);}
         $img->delete();
         return ResponseHelper::success([], 'Image deleted');
-    }
-
-   }
+}
+}
 
 

@@ -13,8 +13,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 class CommentController extends Controller
 {
-    public function addComment(Request $request)
-    {
+public function addComment(Request $request)
+{
         $validator = Validator::make($request->all(), [
             'comment' => 'required|string',
             'post_id' => 'required|exists:posts,id',
@@ -33,10 +33,9 @@ class CommentController extends Controller
         $comment = Comment::create($commentData);
 
         return ResponseHelper::created($comment, 'Comment added successfully');
-    }
-
-    public function updateComment(Request $request, $comment_id)
-    {
+}
+public function updateComment(Request $request, $comment_id)
+{
         $validator = Validator::make($request->all(), [
             'comment' => 'required|string',
         ]);
@@ -55,9 +54,8 @@ class CommentController extends Controller
          catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to update comment', 500);
         }
-    }
-
-    public function deleteComment($comment_id)
+}
+public function deleteComment($comment_id)
 {
     try {
         $comment = Comment::findOrFail($comment_id);
@@ -69,17 +67,16 @@ class CommentController extends Controller
         return ResponseHelper::error([], $e->getMessage(), 'Failed to delete comment', 500);
     }
 }
-
-    public function getCommentById($id)
-    {
+public function getCommentById($id)
+{
 
             $comment = Comment::findOrFail($id);
             $comment['is_owner'] = $comment['is_owner'];
 
             return ResponseHelper::success($comment, null,'Comment retrieved successfully',200);
 
-    }
-    public function getUserComments()
+}
+public function getUserComments()
 {
     try {
         $user = Auth::user();
@@ -90,8 +87,8 @@ class CommentController extends Controller
         return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve user comments', 500);
     }
 }
-    public function getAllComments()
-    {
+public function getAllComments()
+{
         try {
             $comments = Comment::all();
 
@@ -99,8 +96,8 @@ class CommentController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve comments', 500);
         }
-    }
-    public function getPostComments($post_id)
+}
+public function getPostComments($post_id)
 {
     try {
         $comments = Comment::with('user')->where('post_id', $post_id)->get();

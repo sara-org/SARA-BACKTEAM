@@ -26,8 +26,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
 {
-    public function signUp(Request $request)
-    {
+public function signUp(Request $request)
+{
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', Rule::unique('users')],
             'email' => ['required', 'email', Rule::unique('users')],
@@ -57,10 +57,9 @@ class UserController extends Controller
         $data["access_token"] = $user->createToken("API TOKEN")->plainTextToken;
 
         return response()->json($data, Response::HTTP_CREATED);
-    }
-
-    public function login(Request $request)
-    {
+}
+public function login(Request $request)
+{
         $validator = Validator::make($request->all(), [
             'name' => ['required_if:email,null', 'string', Rule::exists('users')],
             'email' => ['email', Rule::exists('users')],
@@ -97,17 +96,16 @@ class UserController extends Controller
         }
 
         return response()->json($data, Response::HTTP_OK);
-    }
-
-    public function logout()
-    {
+}
+public function logout()
+{
         if (Auth::check()) {
             Auth::user()->tokens()->delete();
         }
 
         return response()->json("logged out successfully!", Response::HTTP_OK);
-    }
-    public function updateUser(Request $request, $user_id)
+}
+public function updateUser(Request $request, $user_id)
 {
     if (Auth::user()->id != $user_id) {
         return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -136,8 +134,8 @@ class UserController extends Controller
 
     return ResponseHelper::updated($user, 'User updated');
 }
-    public function userForgotPassword(Request $request): JsonResponse
-    {
+public function userForgotPassword(Request $request): JsonResponse
+{
         $data = $request->validate([
             'email' => 'required|email|exists:users',
         ]);
@@ -157,10 +155,9 @@ class UserController extends Controller
         return response()->json([
             'message' => 'code.sent'
         ], Response::HTTP_OK);
-    }
-
-    public function userCheckCode(Request $request): JsonResponse
-    {
+}
+public function userCheckCode(Request $request): JsonResponse
+{
         $request->validate([
             'code' => 'required|string|exists:reset_code_passwords',
         ]);
@@ -177,14 +174,14 @@ class UserController extends Controller
         return response()->json([
             'message' => 'passwords code is valid'
         ], Response::HTTP_OK);
-    }
-    public function getAllUsers()
-    {
+}
+public function getAllUsers()
+{
         $users = User::all();
         return ResponseHelper::success($users, 'All Users Are retrieved');
-    }
-    public function userResetPassword(Request $request): JsonResponse
-    {
+}
+public function userResetPassword(Request $request): JsonResponse
+{
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|exists:reset_code_passwords',
             'password' => 'required|string|min:8',
@@ -213,10 +210,9 @@ class UserController extends Controller
         $passwordReset->delete();
 
         return response()->json(['message' => 'password has been successfully reset'], Response::HTTP_OK);
-    }
-
-    public function requestVerifyAccount(Request $request): JsonResponse
-    {
+}
+public function requestVerifyAccount(Request $request): JsonResponse
+{
         $data = $request->validate([
             'email' => 'required|email|exists:users',
         ]);
@@ -236,10 +232,9 @@ class UserController extends Controller
         return response()->json([
             'message' => 'code.sent'
         ], Response::HTTP_OK);
-    }
-
-    public function verifyAccount(Request $request): JsonResponse
-    {
+}
+public function verifyAccount(Request $request): JsonResponse
+{
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|exists:reset_code_passwords',
         ]);
@@ -272,10 +267,9 @@ class UserController extends Controller
         ];
 
         return response()->json($data, Response::HTTP_OK);
-    }
-
-    public function changeRole(Request $request, $user_id)
-    {
+}
+public function changeRole(Request $request, $user_id)
+{
         try {
             if (!auth()->check()) {
                 return ResponseHelper::error([], null, 'Unauthorized', 401);
@@ -298,8 +292,7 @@ class UserController extends Controller
         } catch (\Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
-
+}
 public function chargeWallet(Request $request, $user_id)
 {
     try {
@@ -357,9 +350,8 @@ public function getAllWallets()
 
     return ResponseHelper::success(['wallets' => $walletData] , 200, 'All wallets retrieved successfully');
 }
-
-    public function removeWallet($user_id)
-    {
+public function removeWallet($user_id)
+{
         $user = User::findOrFail($user_id);
         if ($user->id !== Auth::user()->id && $user->role !== '2') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
@@ -368,9 +360,9 @@ public function getAllWallets()
         $user->save();
 
         return ResponseHelper::success('Wallet deleted successfully');
-    }
-    public function addDonation(Request $request)
-    {
+}
+public function addDonation(Request $request)
+{
         try {
             $validator = Validator::make($request->all(), [
                 'balance' => 'required|numeric',
@@ -398,9 +390,9 @@ public function getAllWallets()
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
-    public function updateDonation(Request $request, $donation_id)
-    {
+}
+public function updateDonation(Request $request, $donation_id)
+{
         try {
             $validator = Validator::make($request->all(), [
                 'balance' => 'required|numeric',
@@ -440,10 +432,9 @@ public function getAllWallets()
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
-
-    public function getUserDonations($user_id)
-    {
+}
+public function getUserDonations($user_id)
+{
         try {
             $loggedInUser = Auth::user();
 
@@ -460,7 +451,7 @@ public function getAllWallets()
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
+}
 public function deleteDonation($donation_id)
 {
     try {

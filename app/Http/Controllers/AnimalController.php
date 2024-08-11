@@ -14,8 +14,8 @@ use App\Services\AnimalService;
 
 class AnimalController extends Controller
 {
-        public function addAnimal(Request $request)
-        {
+public function addAnimal(Request $request)
+{
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
                 'age' => 'required',
@@ -47,7 +47,7 @@ class AnimalController extends Controller
                     'status' => false,
                     'message' => 'Unauthorized access',
                 ], 401);
-            }
+                }
             $existingAnimal = Animal::where('name', $request->name)
             ->Where('age', $request->age)
             ->where('health', $request->health)
@@ -56,13 +56,13 @@ class AnimalController extends Controller
             ->Where('animaltype_id', $request->animaltype_id)
             ->first();
 
-        if ($existingAnimal) {
+           if ($existingAnimal) {
             return response()->json([
                 'status' => false,
                 'message' => 'Duplicate animal entry',
             ], 409);
-        }
-        $animal = Animal::create([
+              }
+             $animal = Animal::create([
             'name' => $request->name,
             'age' => $request->age,
             'photo' => $request->photo,
@@ -70,16 +70,15 @@ class AnimalController extends Controller
             'health' => $request->health,
             'animaltype_id' => $request->animaltype_id,
             'department_id' => $request->department_id,
-        ]);
+                  ]);
             return response()->json([
                 'status' => true,
                 'message' => 'Animal created successfully',
                 'data' => $animal,
             ], 201);
-        }
-
-    public function updateAnimal(Request $request, $id)
-    {
+}
+public function updateAnimal(Request $request, $id)
+{
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'age' => 'required',
@@ -131,11 +130,9 @@ class AnimalController extends Controller
             'message' => 'Animal updated successfully',
             'data' => $animal,
         ], 200);
-    }
-
-
-    public function getAnimal($id)
-    {
+}
+public function getAnimal($id)
+{
         $animal = Animal::with('adoptions.user', 'sponcerships.user')->find($id);
 
         if (!$animal) {
@@ -149,16 +146,15 @@ class AnimalController extends Controller
             'message' => 'Animal retrieved successfully',
             'data' => $animal,
         ], 200);
-    }
-    public function getAllAnimals()
-    {
+}
+public function getAllAnimals()
+{
             $animals = Animal::all()->toArray();
             return ResponseHelper::success($animals,null,'Animals Retrieved Successfully',200);
-    }
-
-    public function deleteAnimal($id)
-    {
+}
+public function deleteAnimal($id)
+{
        $animal=app(AnimalService::class)->deleteAnimal($id);
        return  $animal;
-    }
+}
 }

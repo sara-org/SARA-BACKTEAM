@@ -21,8 +21,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EmployeeController extends Controller
 {
-    public function addEmployee(Request $request)
-    {
+public function addEmployee(Request $request)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -47,10 +47,9 @@ class EmployeeController extends Controller
         $employee = Employee::create($data);
 
         return ResponseHelper::created($employee, 'Employee created');
-    }
-
-    public function updateEmployee(Request $request, $employee_id)
-    {
+}
+public function updateEmployee(Request $request, $employee_id)
+{
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
@@ -76,9 +75,9 @@ class EmployeeController extends Controller
         $employee->update($request->all());
 
         return ResponseHelper::updated($employee, 'Employee updated');
-    }
-    public function getAllEmployees()
-    {
+}
+public function getAllEmployees()
+{
 
         if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -113,7 +112,6 @@ class EmployeeController extends Controller
 
         return ResponseHelper::success($employee, 'Employee retrieved');
     }
-
     public function deleteEmployee($employee_id)
     {
 
@@ -129,8 +127,8 @@ class EmployeeController extends Controller
         $employee->delete();
 
         return ResponseHelper::success([], 'Employee deleted');
-    }
-    public function reqSponcership(Request $request)
+}
+public function reqSponcership(Request $request)
 {
     try {
         $validator = Validator::make($request->all(), [
@@ -310,7 +308,6 @@ public function deleteSponcership($sponcership_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function ReqAdoption(Request $request)
 {
     try {
@@ -486,7 +483,6 @@ public function deleteAdoption($adoption_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function addFeeding(Request $request)
 {
     try {
@@ -530,7 +526,6 @@ public function addFeeding(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function updateFeeding(Request $request, $feedingId)
 {
     try {
@@ -568,7 +563,6 @@ public function updateFeeding(Request $request, $feedingId)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getUnfedDepartments()
 {
     try {
@@ -684,7 +678,6 @@ public function addVaccination(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function updateVaccination(Request $request, $vaccinationId)
 {
     try {

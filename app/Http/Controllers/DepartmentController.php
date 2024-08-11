@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 class DepartmentController extends Controller
 {
-    public function addDepartment(Request $request)
-    {
+public function addDepartment(Request $request)
+{
         $validator = Validator::make($request->all(),
          [
             'name' => 'required' , 'string',
@@ -50,10 +50,9 @@ class DepartmentController extends Controller
             'message' => 'Deparment created successfully',
             'data' => $department,
         ], 201);
-    }
-
-    public function updateDepartment(Request $request, $id)
-    {
+}
+public function updateDepartment(Request $request, $id)
+{
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'number' => 'required',
@@ -97,9 +96,9 @@ class DepartmentController extends Controller
             'message' => 'Department updated successfully',
             'data' => $department,
         ], 200);
-    }
-    public function getDepartmentById($id)
-    {
+}
+public function getDepartmentById($id)
+{
         $department = Department::find($id);
 
         if (!$department) {
@@ -114,9 +113,9 @@ class DepartmentController extends Controller
             'message' => 'Department retrieved successfully',
             'data' => $department,
         ], 200);
-    }
-    public function getAllDepartments()
-    {
+}
+public function getAllDepartments()
+{
             $departments = Department::all();
 
             return response()->json([
@@ -124,11 +123,9 @@ class DepartmentController extends Controller
                 'message' => 'Departments Retrieved Successfully',
                 'data' => $departments
             ], 200);
-        }
-
-
-    public function deleteDepartment($id)
-    {
+}
+public function deleteDepartment($id)
+{
         {
             $user = Auth::user();
 
@@ -146,5 +143,5 @@ class DepartmentController extends Controller
         return ResponseHelper::success([],null,'Department deleted successfully',200);
 
         }
-    }
+}
 }

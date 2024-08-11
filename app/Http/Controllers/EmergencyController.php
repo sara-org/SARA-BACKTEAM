@@ -16,8 +16,8 @@ use Carbon\Carbon;
 
 class EmergencyController extends Controller
 {
-    public function reqEmergency(Request $request)
-    {
+public function reqEmergency(Request $request)
+{
         try {
             if (!Auth::check()) {
                 return ResponseHelper::error([], null, 'Unauthorized', 401);
@@ -49,8 +49,8 @@ class EmergencyController extends Controller
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
-    public function acceptEmergency($emergencyId)
+}
+public function acceptEmergency($emergencyId)
 {
     try {
         if (!Auth::check()) {
@@ -153,7 +153,6 @@ public function getEmergencyById($emergency_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getUserEmergencies($user_id)
 {
     try {
@@ -171,7 +170,6 @@ public function getUserEmergencies($user_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getAllEmergencies(Request $request)
 {
     $status = $request->input('status');
@@ -338,7 +336,6 @@ public function getAllUserEmergencies()
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getUserEmergenciesByDate(Request $request)
 {
     try {

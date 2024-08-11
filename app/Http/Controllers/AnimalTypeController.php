@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 class AnimalTypeController extends Controller
 {
-    public function addAnimalType(Request $request)
-    {
+public function addAnimalType(Request $request)
+{
         $validator = Validator::make($request->all(), [
             'type' => 'required',
         ]);
@@ -39,9 +39,9 @@ class AnimalTypeController extends Controller
             'message' => 'Animal type created successfully',
             'data' => $animaltype,
         ], 201);
-    }
-    public function updateAnimalType(Request $request, $id)
-    {
+}
+public function updateAnimalType(Request $request, $id)
+{
         $validator = Validator::make($request->all(), [
             'type' => 'required',
         ]);
@@ -81,9 +81,9 @@ class AnimalTypeController extends Controller
             'message' => 'Animal Type updated successfully',
             'data' => $animaltype,
         ], 200);
-    }
-    public function getAnimalTypeById($id)
-    {
+}
+public function getAnimalTypeById($id)
+{
         $animaltype = AnimalType::find($id);
 
         if (!$animaltype) {
@@ -98,9 +98,9 @@ class AnimalTypeController extends Controller
             'message' => 'Animal Type retrieved successfully',
             'data' => $animaltype,
         ], 200);
-    }
-    public function getAllAnimalsTypes()
-    {
+}
+public function getAllAnimalsTypes()
+{
 
             $animalstypes = AnimalType::all();
 
@@ -128,11 +128,9 @@ class AnimalTypeController extends Controller
                 'message' => 'Animals Retrieved Successfully',
                 'data' => $animals
             ], 200);
-        }
-
-
-    public function deleteAnimalType($id)
-    {
+}
+public function deleteAnimalType($id)
+{
         $user = Auth::user();
 
         if (Auth::user()->role !== '4' && Auth::user()->role !== '2') {
@@ -146,9 +144,9 @@ class AnimalTypeController extends Controller
             return ResponseHelper::success([],null,'Animal Type not found',200);
         }
                 $animaltype->delete();
-    return ResponseHelper::success([],null,'Animal Type deleted successfully',200);
+               return ResponseHelper::success([],null,'Animal Type deleted successfully',200);
 
-    }
+}
 }
 
 

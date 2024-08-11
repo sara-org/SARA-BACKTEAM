@@ -12,13 +12,12 @@ use Illuminate\Support\Facades\Validator;
 
 class LikeController extends Controller
 {
-    public function likePost(LikeRequest $request)
-    {
-        
+public function likePost(LikeRequest $request)
+{
+
         $like = app(LikeService::class)->likePost($request);
         return ResponseHelper::created($like, 'Post liked successfully');
-    }
-
+}
     public function unlikePost(Request $request, $post)
 {
 

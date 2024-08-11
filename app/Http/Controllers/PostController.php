@@ -12,8 +12,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 class PostController extends Controller
 {
-    public function addPost(Request $request)
-    {
+public function addPost(Request $request)
+{
         $validator = Validator::make($request->all(), [
             'text' => 'required|string',
             'photo' => ['nullable','string'],
@@ -35,16 +35,15 @@ class PostController extends Controller
         $post = Post::create($postData);
 
         return ResponseHelper::created($post, 'Post added successfully');
-    }
-
-    public function updatePost(Request $request, $post_id)
-    {
+}
+public function updatePost(Request $request, $post_id)
+{
         $validator = Validator::make($request->all(), [
             'text' => 'required|string',
             'photo' => ['nullable','string'],
         ]);
 
-  if (Auth::user()->role != '2') {
+       if (Auth::user()->role != '2') {
             return ResponseHelper::error(null, null, 'Unauthorized', 401);
         }
         if ($validator->fails()) {
@@ -61,10 +60,9 @@ class PostController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to update post', 500);
         }
-    }
-
-    public function deletePost($post_id)
-    {
+}
+public function deletePost($post_id)
+{
         try {
             if (Auth::user()->role != '2') {
                 return ResponseHelper::error(null, null, 'Unauthorized', 401);
@@ -76,10 +74,9 @@ class PostController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to delete post', 500);
         }
-    }
-
-    public function getPostById($id)
-    {
+}
+public function getPostById($id)
+{
         try {
             $post = Post::with('likes','comments')->findOrFail($id);
             $post['is_owner'] = $post['is_owner'];
@@ -89,10 +86,9 @@ class PostController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve post', 500);
         }
-    }
-
-    public function getAllPosts()
-    {
+}
+public function getAllPosts()
+{
         try {
             $posts = Post::with('likes','comments')->get();
             $posts->each(function ($post) {
@@ -102,5 +98,5 @@ class PostController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'Failed to retrieve posts', 500);
         }
-    }
+}
 }

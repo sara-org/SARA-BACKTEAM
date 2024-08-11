@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SessionController extends Controller
 {
-    public function addSession(Request $request)
-    {
+public function addSession(Request $request)
+{
         try {
             if (Auth::user()->role !== '2') {
                 return ResponseHelper::error([], null, 'Unauthorized', 401);
@@ -49,10 +49,9 @@ class SessionController extends Controller
         } catch (Throwable $th) {
             return ResponseHelper::error([], null, $th->getMessage(), 500);
         }
-    }
-
-    public function updateSession(Request $request, $session_id)
-    {
+}
+public function updateSession(Request $request, $session_id)
+{
         try {
             if (Auth::user()->role !== '2') {
                 return ResponseHelper::error([], null, 'Unauthorized', 401);
@@ -93,7 +92,7 @@ class SessionController extends Controller
         } catch (\Exception $e) {
             return ResponseHelper::error([], $e->getMessage(), 'An error occurred', 500);
         }
-    }
+}
 public function getSessionById($session_id)
 {
     try {
@@ -129,7 +128,6 @@ public function deleteSession($session_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function addUserToSession(Request $request)
 {
     try {
@@ -166,8 +164,6 @@ public function addUserToSession(Request $request)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
-
 public function getUserSessionById($user_session_id)
 {
     try {
@@ -201,7 +197,6 @@ public function getUserSessions()
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
-
 public function getAllUsersSessions()
 {
     try {
