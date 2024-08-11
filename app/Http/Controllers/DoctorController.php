@@ -664,7 +664,7 @@ public function getAllForAdmin()
 
     $today = Carbon::today();
     $startOfWeek = $today->startOfWeek()->subDay();
-    $endOfWeek = $startOfWeek->copy()->addDays(7);
+    $endOfWeek = $startOfWeek->copy()->addDays(6);
 
     $result = WorkingHours::query()
     ->whereHas('appointments', function($q) use ($startOfWeek, $endOfWeek) {
