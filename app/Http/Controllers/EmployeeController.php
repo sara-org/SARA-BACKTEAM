@@ -495,7 +495,7 @@ public function addFeeding(Request $request)
         }
 
         $user = Auth::user();
-        if ($user->role !== '2') {
+        if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -538,7 +538,7 @@ public function updateFeeding(Request $request, $feedingId)
         }
 
         $user = Auth::user();
-        if ($user->role !== '2') {
+        if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
