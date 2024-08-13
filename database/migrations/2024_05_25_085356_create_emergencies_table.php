@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('contact');
             $table->date('emr_date');
             $table->longText('photo')->nullable();
+            $table->enum('emer_status', ['In_process','processed']);
             $table->boolean('status')->default(0);
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

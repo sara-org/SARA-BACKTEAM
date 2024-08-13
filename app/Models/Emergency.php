@@ -16,6 +16,7 @@ class Emergency extends Model
         'contact',
         'photo',
         'user_id',
+        'emer_status',
         'emr_date',
         'status',
        ];

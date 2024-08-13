@@ -40,6 +40,7 @@ public function reqEmergency(Request $request)
                 'photo' => $request->input('photo'),
                 'user_id' => Auth::id(),
                 'emr_date' => Carbon::now()->toDateString(),
+                'emer_status' => 'In_process',
                 'status' => 0,
             ];
 
@@ -80,7 +81,7 @@ public function rejectEmergency($emergencyId)
         }
 
         $user = Auth::user();
-        if ($user->role !== '2') {
+        if ($user->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
 
@@ -91,6 +92,43 @@ public function rejectEmergency($emergencyId)
         }
         $emergency->delete();
         return ResponseHelper::success(null, 'Emergency rejected successfully');
+    } catch (Throwable $th) {
+        return ResponseHelper::error([], null, $th->getMessage(), 500);
+    }
+}
+public function updateEmergencyStatus($emergencyId, Request $request)
+{
+    try {
+        if (!Auth::check()) {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $user = Auth::user();
+        if ($user->role !== '4') {
+            return ResponseHelper::error([], null, 'Unauthorized', 401);
+        }
+
+        $emergency = Emergency::find($emergencyId);
+
+        if (!$emergency) {
+            return ResponseHelper::error([], null, 'Emergency not found', 404);
+        }
+        if ($emergency->status !== 1)
+        {
+            return ResponseHelper::error([], null, 'Unauthorized: Emergency status is not valid for update', 403);
+        }
+        $validator = Validator::make($request->all(), [
+            'emer_status' => 'required|in:In_process,processed',
+        ]);
+
+        if ($validator->fails())
+        {
+            return ResponseHelper::error([], null, 'Unauthorized: Emergency status is not valid', 403);
+        }
+
+        $emergency->update(['emer_status' => $request->input('emer_status')]);
+
+        return ResponseHelper::success($emergency, 'Emergency status updated successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
@@ -195,7 +233,7 @@ public function getEmergenciesByDate(Request $request)
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $user = Auth::user();
-        if ($user->role !== '4') {
+        if(Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
         $validator = Validator::make($request->all(), [
@@ -323,14 +361,10 @@ public function getUserEmergencyById($user_emergency_id)
 public function getAllUserEmergencies()
 {
     try {
-        $user = Auth::user();
-
-        if ($user->role !== '4') {
+        if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-
-        $userEmergencies = UserEmr::where('user_id', $user->id)->get();
-
+        $userEmergencies = UserEmr::all();
         return ResponseHelper::success($userEmergencies, 'User emergencies retrieved successfully');
     } catch (Throwable $th) {
         return ResponseHelper::error([], null, $th->getMessage(), 500);
@@ -370,4 +404,5 @@ public function deleteUserEmergency($user_emergency_id)
         return ResponseHelper::error([], null, $th->getMessage(), 500);
     }
 }
+
 }
