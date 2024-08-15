@@ -216,9 +216,6 @@ public function getAllEmergencies(Request $request)
         if (!Auth::check()) {
             return ResponseHelper::error([], null, 'Unauthorized', 401);
         }
-        if(Auth::user()->role !== '2'&& Auth::user()->role !== '4') {
-            return ResponseHelper::error([], null, 'Unauthorized', 401);
-        }
         $emergencies = Emergency::where('status', $status)->get();
 
         return ResponseHelper::success($emergencies, 'Emergencies with status '.$status.' retrieved successfully');
