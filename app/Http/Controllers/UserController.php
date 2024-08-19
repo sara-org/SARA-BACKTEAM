@@ -378,6 +378,8 @@ public function addDonation(Request $request)
             $loggedUser = Auth::user();
             if ($loggedUser->wallet < $request->input('balance')) {
                 return ResponseHelper::error([], null, 'Insufficient balance', 400);}
+            if ($loggedUser->wallet <= 0) {
+                    return ResponseHelper::error([], null, 'Wallet balance is zero or negative', 400);}
             $donationData = $request->only('balance');
             $donationData['donation_date'] = now()->format('Y-m-d H:i:s');
             $donationData['user_id'] = $loggedUser->id;

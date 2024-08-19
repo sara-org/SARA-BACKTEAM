@@ -141,6 +141,14 @@ public function reqSponcership(Request $request)
         }
 
         $user = Auth::user();
+
+        if ($user->wallet <= 0)
+        {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Wallet balance is zero or negative. Cannot request sponsorship.',
+            ], 400);
+        }
         $animal = Animal::findOrFail($request->input('animal_id'));
         $adoption = Adoption::where('animal_id', $animal->id)->first();
 
@@ -194,9 +202,15 @@ public function ApproveSponcership(Request $request, $sponcershipId)
         $sponcership->save();
 
         $user = $sponcership->user;
-        $user->wallet -= $sponcership->balance;
-        $user->save();
-
+        if ($user->wallet >= 0)
+        {
+            $user->wallet -= $sponcership->balance;
+            $user->save();
+        }
+        else
+        {
+            return ResponseHelper::error([], null, 'Wallet balance is zero or negative', 400);
+        }
         return ResponseHelper::success($sponcership, 'Sponcership approved successfully');
     } catch (ModelNotFoundException $exception) {
         return ResponseHelper::error([], null, 'Sponcership not found', 404);
